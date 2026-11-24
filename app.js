@@ -1108,7 +1108,11 @@
       </article>`;
   }
 
-  function renderBank() {
+  let bankVisibleCount = 30;
+  let bankSearchTimer = null;
+
+  function renderBank(resetPage = true) {
+    if (resetPage) bankVisibleCount = 30;
     $('bankShowAnsToggle').checked = !!state.prefs.bankShowAns;
     $('bankHighlightToggle').checked = !!state.prefs.bankHighlight;
     document.querySelectorAll('#bankFilterChips .chip').forEach((c) => {
@@ -1116,7 +1120,11 @@
     });
 
     const list = getBankFilteredQuestions();
-    $('bankResultMeta').textContent = `Hiển thị ${list.length} / ${QUESTIONS.length} câu hỏi`;
+    const slice = list.slice(0, bankVisibleCount);
+    $('bankResultMeta').textContent =
+      list.length > slice.length
+        ? `Đang hiện ${slice.length} / ${list.length} câu (tổng ${QUESTIONS.length} câu)`
+        : `Hiển thị ${list.length} / ${QUESTIONS.length} câu hỏi`;
 
     if (!list.length) {
       $('bankList').innerHTML = `<div class="empty-state"><div class="empty-emoji">🌸</div><h3>Không có câu hỏi nào phù hợp</h3><p>Hãy thử đổi từ khóa tìm kiếm hoặc chọn bộ lọc khác nhé.</p></div>`;
@@ -1125,7 +1133,17 @@
 
     const showAns = !!state.prefs.bankShowAns;
     const hlOn = !!state.prefs.bankHighlight;
-    $('bankList').innerHTML = list.map((q) => renderBankCardHtml(q, showAns, hlOn)).join('');
+    let html = slice.map((q) => renderBankCardHtml(q, showAns, hlOn)).join('');
+    if (list.length > slice.length) {
+      const remaining = list.length - slice.length;
+      const nextStep = Math.min(30, remaining);
+      html += `
+        <div class="bank-load-more">
+          <button type="button" class="btn btn-primary" id="bankLoadMoreBtn">⬇️ Xem thêm ${nextStep} câu (còn ${remaining} câu)</button>
+          <button type="button" class="btn btn-soft" id="bankLoadAllBtn">Hiện tất cả ${list.length} câu</button>
+        </div>`;
+    }
+    $('bankList').innerHTML = html;
   }
 
   // ==================== QUESTION QUICK-VIEW MODAL ====================
@@ -1601,22 +1619,34 @@
     });
 
     // Bank Events
-    $('bankSearchInput').addEventListener('input', renderBank);
+    $('bankSearchInput').addEventListener('input', () => {
+      clearTimeout(bankSearchTimer);
+      bankSearchTimer = setTimeout(() => renderBank(true), 150);
+    });
     $('bankShowAnsToggle').addEventListener('change', (e) => {
       state.prefs.bankShowAns = e.target.checked;
       saveState();
-      renderBank();
+      renderBank(false);
     });
     $('bankHighlightToggle').addEventListener('change', (e) => {
       state.prefs.bankHighlight = e.target.checked;
       saveState();
-      renderBank();
+      renderBank(false);
     });
     $('bankFilterChips').addEventListener('click', (e) => {
       const chip = e.target.closest('.chip');
       if (!chip) return;
       bankFilter = chip.dataset.bfilter;
-      renderBank();
+      renderBank(true);
+    });
+    $('bankList').addEventListener('click', (e) => {
+      if (e.target.closest('#bankLoadMoreBtn')) {
+        bankVisibleCount += 30;
+        renderBank(false);
+      } else if (e.target.closest('#bankLoadAllBtn')) {
+        bankVisibleCount = QUESTIONS.length;
+        renderBank(false);
+      }
     });
 
     $('bankToFlashcardBtn').addEventListener('click', () => {
