@@ -1,0 +1,5 @@
+# Ignore source docx and local OS/editor files
+vnr202.docx
+*.docx
+.DS_Store
+Thumbs.db

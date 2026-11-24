@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bột iuu thi tốt — Ôn thi VNR202</title>
+  <meta name="description"
+    content="Web học bài VNR202 kiểu Quizlet dành riêng cho Bột: Flashcard, Học bài, Đề thi 60 câu ngẫu nhiên, Mẹo học có link từng câu, Lưu tiến trình & Lịch sử làm đề." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Quicksand:wght@600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand" id="brandHome" role="button" tabindex="0" title="Về trang học">
+        <span class="brand-heart" aria-hidden="true">💖</span>
+        <div class="brand-text">
+          <h1 class="brand-title">Bột iuu thi tốt</h1>
+          <p class="brand-sub">Ôn thi VNR202 • 415 câu</p>
+        </div>
+      </div>
+
+      <div class="header-stats">
+        <div class="stat-pill" title="Tiến độ đã thuộc">
+          <span class="stat-dot dot-mastered"></span>
+          <span>Thuộc: <strong id="hdrMastered">0</strong>/<span id="hdrTotal">415</span></span>
+        </div>
+        <div class="stat-pill stat-pill-clickable" id="hdrFavBtn" title="Xem các câu đã thả tim">
+          <span>❤️</span>
+          <span><strong id="hdrFavorites">0</strong></span>
+        </div>
+        <button class="btn-icon-ghost" id="openSettingsBtn" title="Sao lưu / Khôi phục tiến trình"
+          aria-label="Cài đặt dữ liệu">
+          ⚙️
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="main-nav" aria-label="Chế độ học">
+      <div class="nav-inner">
+        <button class="nav-tab active" data-tab="flashcards">
+          <span class="nav-ic">🗂️</span>
+          <span>Thẻ ghi nhớ</span>
+        </button>
+        <button class="nav-tab" data-tab="learn">
+          <span class="nav-ic">🧠</span>
+          <span>Học bài</span>
+        </button>
+        <button class="nav-tab" data-tab="exam">
+          <span class="nav-ic">📝</span>
+          <span>Thi thử 60 câu</span>
+        </button>
+        <button class="nav-tab" data-tab="tips">
+          <span class="nav-ic">✨</span>
+          <span>Mẹo học</span>
+        </button>
+        <button class="nav-tab" data-tab="history">
+          <span class="nav-ic">📊</span>
+          <span>Lịch sử &amp; Câu sai</span>
+        </button>
+        <button class="nav-tab" data-tab="bank">
+          <span class="nav-ic">❤️</span>
+          <span>Kho câu &amp; Yêu thích</span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Global Progress Ribbon -->
+  <div class="progress-ribbon" title="Tổng tiến trình ôn tập">
+    <div class="progress-ribbon-fill" id="globalProgressFill" style="width: 0%"></div>
+  </div>
+
+  <!-- Main Workspace -->
+  <main class="container">
+    <!-- ==================== TAB 1: FLASHCARDS ==================== -->
+    <section class="tab-panel active" id="panel-flashcards">
+      <div class="panel-toolbar">
+        <div class="filter-chips" id="fcFilters">
+          <button class="chip active" data-filter="all">Tất cả (<span data-count="all">415</span>)</button>
+          <button class="chip" data-filter="unseen">Chưa học (<span data-count="unseen">0</span>)</button>
+          <button class="chip" data-filter="learning">Cần ôn (<span data-count="learning">0</span>)</button>
+          <button class="chip" data-filter="mastered">Đã thuộc (<span data-count="mastered">0</span>)</button>
+          <button class="chip" data-filter="favorite">❤️ Yêu thích (<span data-count="favorite">0</span>)</button>
+          <button class="chip" data-filter="wrong">❌ Từng sai (<span data-count="wrong">0</span>)</button>
+        </div>
+        <div class="toolbar-actions">
+          <label class="toggle-label" title="Hiện từ khóa được bôi sáng từ file gốc">
+            <input type="checkbox" id="fcHighlightToggle" checked />
+            <span>Từ khóa gốc</span>
+          </label>
+          <button class="btn btn-soft btn-sm" id="fcShuffleBtn">🔀 Trộn thẻ</button>
+          <button class="btn btn-soft btn-sm" id="fcResetOrderBtn" title="Sắp xếp lại theo thứ tự câu gốc">↺ Thứ tự
+            gốc</button>
+        </div>
+      </div>
+
+      <div id="fcCustomBanner" class="custom-banner hidden">
+        <span id="fcCustomBannerText"></span>
+        <button class="btn btn-soft btn-xs" id="fcClearCustomBtn">Quay lại toàn bộ</button>
+      </div>
+
+      <div id="fcEmptyState" class="empty-state hidden">
+        <div class="empty-emoji">🌸</div>
+        <h3>Không có thẻ nào trong bộ lọc này!</h3>
+        <p>Bột hãy chọn bộ lọc khác hoặc quay lại tất cả 415 câu nhé.</p>
+        <button class="btn btn-primary" id="fcBackAllBtn">Xem tất cả 415 câu</button>
+      </div>
+
+      <div id="fcStage" class="fc-stage">
+        <div class="fc-meta-bar">
+          <span class="fc-counter" id="fcCounter">Thẻ 1 / 415</span>
+          <div class="fc-jump-box">
+            <input type="text" id="fcJumpInput" class="input-mini" placeholder="Đi tới câu..."
+              aria-label="Đi tới số câu" />
+            <button class="btn btn-soft btn-xs" id="fcJumpBtn">Đi</button>
+          </div>
+          <div class="fc-badges">
+            <span class="status-badge" id="fcStatusBadge">Chưa học</span>
+            <button class="heart-btn" id="fcHeartBtn" title="Thả tim lưu câu hỏi (Phím H)"
+              aria-label="Thả tim">🤍</button>
+          </div>
+        </div>
+
+        <!-- 3D Flip Card -->
+        <div class="flashcard-scene" id="fcScene">
+          <div class="flashcard" id="fcCard" tabindex="0" role="button" aria-label="Nhấn để lật thẻ">
+            <div class="fc-face fc-front">
+              <div class="fc-face-top">
+                <span class="q-tag" id="fcFrontTag">Câu 1</span>
+                <span class="fc-hint">Nhấn thẻ hoặc Space để xem đáp án ↻</span>
+              </div>
+              <div class="fc-question" id="fcQuestion"></div>
+              <ul class="fc-options-preview" id="fcOptionsFront"></ul>
+              <div class="fc-tips-inline" id="fcTipsFront"></div>
+            </div>
+
+            <div class="fc-face fc-back">
+              <div class="fc-face-top">
+                <span class="q-tag" id="fcBackTag">Đáp án • Câu 1</span>
+                <span class="fc-hint">Nhấn để lật lại ↺</span>
+              </div>
+              <div class="fc-answer-box" id="fcAnswerBox"></div>
+              <div class="fc-note-box hidden" id="fcNoteBox"></div>
+              <div class="fc-tips-inline" id="fcTipsBack"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Flashcard Controls -->
+        <div class="fc-controls">
+          <button class="btn btn-soft" id="fcPrevBtn" title="Phím ←">← Trước</button>
+          <div class="fc-rate-group">
+            <button class="btn btn-warn" id="fcLearningBtn" title="Phím 1">🔁 Cần ôn lại</button>
+            <button class="btn btn-primary" id="fcFlipBtn" title="Phím Space">↻ Lật thẻ</button>
+            <button class="btn btn-success" id="fcMasteredBtn" title="Phím 2">✓ Đã thuộc</button>
+          </div>
+          <button class="btn btn-soft" id="fcNextBtn" title="Phím →">Sau →</button>
+        </div>
+
+        <p class="shortcut-hint">Phím tắt: <kbd>Space</kbd> Lật thẻ • <kbd>←</kbd>/<kbd>→</kbd> Chuyển thẻ •
+          <kbd>1</kbd> Cần ôn • <kbd>2</kbd> Đã thuộc • <kbd>H</kbd> Thả tim</p>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: LEARN MODE ==================== -->
+    <section class="tab-panel" id="panel-learn">
+      <div class="panel-toolbar">
+        <div class="filter-chips" id="learnFilters">
+          <button class="chip active" data-filter="smart">Ưu tiên chưa thuộc</button>
+          <button class="chip" data-filter="all">Tất cả (415)</button>
+          <button class="chip" data-filter="favorite">❤️ Yêu thích</button>
+          <button class="chip" data-filter="wrong">❌ Câu hay sai</button>
+          <button class="chip" data-filter="learning">🔁 Cần ôn lại</button>
+        </div>
+        <div class="toolbar-actions">
+          <label class="toggle-label">
+            <input type="checkbox" id="learnShuffleOpt" checked />
+            <span>Trộn đáp án</span>
+          </label>
+          <label class="toggle-label">
+            <input type="checkbox" id="learnHighlightToggle" checked />
+            <span>Từ khóa gốc</span>
+          </label>
+          <button class="btn btn-soft btn-sm" id="learnRestartBtn">🔀 Đảo câu</button>
+        </div>
+      </div>
+
+      <div id="learnCustomBanner" class="custom-banner hidden">
+        <span id="learnCustomBannerText"></span>
+        <button class="btn btn-soft btn-xs" id="learnClearCustomBtn">Quay lại chế độ chung</button>
+      </div>
+
+      <div id="learnEmptyState" class="empty-state hidden">
+        <div class="empty-emoji">🎉</div>
+        <h3>Bột giỏi quá! Không còn câu nào trong bộ lọc này!</h3>
+        <p>Chọn bộ lọc khác hoặc chuyển sang thi thử 60 câu để kiểm tra nhé.</p>
+        <button class="btn btn-primary" id="learnBackAllBtn">Học tất cả 415 câu</button>
+      </div>
+
+      <div id="learnStage" class="learn-card">
+        <div class="learn-top">
+          <div class="learn-progress-wrap">
+            <div class="learn-progress-text">
+              <span id="learnCounter">Câu 1 / 415</span>
+              <span id="learnSessionScore">Phiên này: 0 đúng • 0 sai</span>
+            </div>
+            <div class="mini-progress">
+              <div id="learnProgressBar" class="mini-progress-fill"></div>
+            </div>
+          </div>
+          <button class="heart-btn" id="learnHeartBtn" title="Thả tim lưu câu hỏi">🤍</button>
+        </div>
+
+        <div class="learn-q-header">
+          <span class="q-tag" id="learnQTag">Câu 1</span>
+          <span class="multi-badge hidden" id="learnMultiBadge">Chọn nhiều đáp án</span>
+          <span class="stat-mini-badge" id="learnHistBadge"></span>
+        </div>
+
+        <h2 class="learn-question" id="learnQuestion"></h2>
+        <div class="learn-options" id="learnOptions"></div>
+
+        <div class="learn-multi-submit hidden" id="learnMultiSubmitWrap">
+          <button class="btn btn-primary" id="learnMultiSubmitBtn">Kiểm tra đáp án</button>
+        </div>
+
+        <div class="learn-feedback hidden" id="learnFeedback">
+          <div class="feedback-title" id="learnFeedbackTitle"></div>
+          <div class="feedback-note hidden" id="learnFeedbackNote"></div>
+          <div class="feedback-tips" id="learnFeedbackTips"></div>
+        </div>
+
+        <div class="learn-footer">
+          <button class="btn btn-soft" id="learnPrevBtn">← Câu trước</button>
+          <div class="learn-footer-right">
+            <button class="btn btn-soft" id="learnSkipBtn">Bỏ qua</button>
+            <button class="btn btn-primary" id="learnNextBtn">Câu tiếp theo →</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: EXAM 60 QUESTIONS ==================== -->
+    <section class="tab-panel" id="panel-exam">
+      <!-- Setup View -->
+      <div id="examSetupView" class="exam-setup-card">
+        <div class="exam-hero">
+          <div class="exam-hero-badge">🎀 Giả lập đề thi VNR202</div>
+          <h2>Tạo đề thi 60 câu ngẫu nhiên</h2>
+          <p>Luyện phản xạ như thi thật, tự động lưu bài đang làm nếu lỡ tải lại trang, và lưu toàn bộ lịch sử đúng/sai
+            vào máy của Bột.</p>
+        </div>
+
+        <div id="examResumeBox" class="resume-alert hidden">
+          <div>
+            <strong>📌 Bột đang có 1 đề thi làm dở!</strong>
+            <p id="examResumeInfo"></p>
+          </div>
+          <div class="resume-actions">
+            <button class="btn btn-primary btn-sm" id="examResumeBtn">Tiếp tục làm đề</button>
+            <button class="btn btn-soft btn-sm" id="examDiscardBtn">Hủy đề cũ</button>
+          </div>
+        </div>
+
+        <div class="setup-grid">
+          <div class="setup-field">
+            <label for="examCountSelect">Số lượng câu hỏi</label>
+            <select id="examCountSelect" class="select-input">
+              <option value="60" selected>60 câu (Chuẩn đề thi)</option>
+              <option value="40">40 câu (Ôn nhanh)</option>
+              <option value="30">30 câu (Mini test)</option>
+              <option value="100">100 câu (Siêu chiến)</option>
+            </select>
+          </div>
+
+          <div class="setup-field">
+            <label for="examSourceSelect">Nguồn chọn câu hỏi</label>
+            <select id="examSourceSelect" class="select-input">
+              <option value="random" selected>Ngẫu nhiên toàn bộ 415 câu</option>
+              <option value="weak">Ưu tiên câu hay sai &amp; chưa thuộc</option>
+              <option value="favorite">Chỉ lấy từ câu đã thả tim ❤️</option>
+              <option value="wrong">Chỉ lấy từ câu từng làm sai ❌</option>
+            </select>
+          </div>
+
+          <div class="setup-field">
+            <label for="examTimeSelect">Thời gian làm bài</label>
+            <select id="examTimeSelect" class="select-input">
+              <option value="45" selected>45 phút (Chuẩn thi)</option>
+              <option value="60">60 phút</option>
+              <option value="30">30 phút</option>
+              <option value="0">Không giới hạn thời gian</option>
+            </select>
+          </div>
+
+          <div class="setup-field setup-checkbox-field">
+            <label class="toggle-label">
+              <input type="checkbox" id="examShuffleOpts" checked />
+              <span>Trộn thứ tự đáp án A/B/C/D</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="exam-start-wrap">
+          <button class="btn btn-primary btn-lg" id="startExamBtn">🚀 Bắt đầu làm đề ngay</button>
+        </div>
+      </div>
+
+      <!-- Active Exam View -->
+      <div id="examActiveView" class="exam-active-layout hidden">
+        <div class="exam-main">
+          <div class="exam-topbar">
+            <div class="exam-topbar-left">
+              <span class="q-tag" id="examCurrentPos">Câu 1 / 60</span>
+              <span class="q-origin-tag" id="examOriginId">Mã câu: #1</span>
+              <span class="multi-badge hidden" id="examMultiBadge">Chọn nhiều đáp án</span>
+            </div>
+            <div class="exam-topbar-right">
+              <span class="timer-pill" id="examTimer">⏱ 45:00</span>
+              <button class="btn btn-soft btn-xs" id="examFlagBtn" title="Đánh dấu xem lại">🚩 Xem lại</button>
+              <button class="heart-btn" id="examHeartBtn" title="Thả tim lưu câu hỏi">🤍</button>
+            </div>
+          </div>
+
+          <div class="exam-q-card">
+            <h2 class="exam-question" id="examQuestionText"></h2>
+            <div class="exam-options" id="examOptionsList"></div>
+          </div>
+
+          <div class="exam-nav-bottom">
+            <button class="btn btn-soft" id="examPrevBtn">← Câu trước</button>
+            <button class="btn btn-primary" id="examNextBtn">Câu sau →</button>
+          </div>
+        </div>
+
+        <aside class="exam-sidebar">
+          <div class="exam-side-card">
+            <div class="exam-side-head">
+              <h3>Bảng câu hỏi</h3>
+              <span id="examAnsweredCount">0/60 đã chọn</span>
+            </div>
+            <div class="exam-grid" id="examNavGrid"></div>
+            <div class="exam-legend">
+              <span><i class="leg-dot leg-done"></i> Đã làm</span>
+              <span><i class="leg-dot leg-flag"></i> Xem lại</span>
+              <span><i class="leg-dot leg-cur"></i> Hiện tại</span>
+            </div>
+            <button class="btn btn-primary btn-block" id="submitExamBtn">✅ Nộp bài &amp; Chấm điểm</button>
+            <button class="btn btn-soft btn-block btn-sm" id="quitExamBtn">Lưu tạm &amp; Thoát</button>
+          </div>
+        </aside>
+      </div>
+
+      <!-- Exam Result & Review View -->
+      <div id="examResultView" class="exam-result-wrap hidden">
+        <div class="result-summary-card">
+          <div class="result-score-circle">
+            <span class="score-big" id="resScoreTen">8.5</span>
+            <span class="score-sub">thang 10</span>
+          </div>
+          <div class="result-info">
+            <h2 id="resTitle">Hoàn thành đề thi! 🎉</h2>
+            <p id="resSubtitle"></p>
+            <div class="result-metrics">
+              <div class="metric-box metric-right"><strong id="resRight">0</strong><span>Câu đúng</span></div>
+              <div class="metric-box metric-wrong"><strong id="resWrong">0</strong><span>Câu sai / bỏ trống</span></div>
+              <div class="metric-box metric-time"><strong id="resDuration">00:00</strong><span>Thời gian</span></div>
+            </div>
+            <div class="result-actions">
+              <button class="btn btn-primary" id="resPracticeWrongBtn">🔁 Ôn lại các câu sai</button>
+              <button class="btn btn-soft" id="resNewExamBtn">📝 Tạo đề 60 câu mới</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-toolbar">
+          <div class="filter-chips" id="resFilterChips">
+            <button class="chip active" data-filter="all">Tất cả</button>
+            <button class="chip" data-filter="wrong">❌ Chỉ câu sai</button>
+            <button class="chip" data-filter="right">✅ Chỉ câu đúng</button>
+            <button class="chip" data-filter="favorite">❤️ Đã thả tim</button>
+          </div>
+        </div>
+
+        <div id="resReviewList" class="review-list"></div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: STUDY TIPS ==================== -->
+    <section class="tab-panel" id="panel-tips">
+      <div class="tips-intro-card">
+        <div>
+          <h2>✨ Tóm tắt mẹo học VNR202 (Phủ 100% — 415/415 câu)</h2>
+          <p>Mỗi mẹo gom đúng các mốc năm, từ khóa dễ nhầm và gắn <strong>link trực tiếp tới từng câu hỏi áp
+              dụng</strong>. Bấm vào số câu để xem ngay hoặc bấm <em>Ôn bộ câu này</em> để luyện tập trung!</p>
+        </div>
+        <div class="tips-search-wrap">
+          <input type="search" id="tipsSearchInput" class="search-input"
+            placeholder="Tìm mẹo học, Đại hội, năm, nghị quyết..." />
+        </div>
+      </div>
+
+      <div class="filter-chips" id="tipsGroupChips">
+        <button class="chip active" data-group="all">Tất cả (16 mẹo)</button>
+        <button class="chip" data-group="Giai đoạn 1911–1945">Giai đoạn 1911–1945</button>
+        <button class="chip" data-group="Kháng chiến 1945–1975">Kháng chiến 1945–1975</button>
+        <button class="chip" data-group="Thống nhất & Đổi mới">Thống nhất &amp; Đổi mới</button>
+        <button class="chip" data-group="Nghị quyết & Mẹo chống bẫy">Nghị quyết &amp; Chống bẫy</button>
+      </div>
+
+      <div id="tipsGrid" class="tips-grid"></div>
+    </section>
+
+    <!-- ==================== TAB 5: HISTORY & STATS ==================== -->
+    <section class="tab-panel" id="panel-history">
+      <div class="stats-overview-grid">
+        <div class="overview-card">
+          <span class="ov-icon">📝</span>
+          <strong id="statTotalExams">0</strong>
+          <span>Đề đã làm</span>
+        </div>
+        <div class="overview-card">
+          <span class="ov-icon">🌟</span>
+          <strong id="statAvgScore">0.0</strong>
+          <span>Điểm TB (/10)</span>
+        </div>
+        <div class="overview-card">
+          <span class="ov-icon">🏆</span>
+          <strong id="statBestScore">0.0</strong>
+          <span>Điểm cao nhất</span>
+        </div>
+        <div class="overview-card">
+          <span class="ov-icon">❌</span>
+          <strong id="statWrongUnique">0</strong>
+          <span>Câu từng làm sai</span>
+        </div>
+      </div>
+
+      <div class="history-subtabs">
+        <button class="chip active" data-hview="attempts">📋 Lịch sử làm đề</button>
+        <button class="chip" data-hview="wrongbank">❌ Thống kê câu sai &amp; đúng</button>
+      </div>
+
+      <!-- Attempts list -->
+      <div id="historyAttemptsView">
+        <div id="attemptsList" class="attempts-list"></div>
+      </div>
+
+      <!-- Wrong questions analytics -->
+      <div id="historyWrongView" class="hidden">
+        <div class="panel-toolbar">
+          <div class="filter-chips" id="statsFilterChips">
+            <button class="chip active" data-sfilter="wrong">Hay làm sai nhất</button>
+            <button class="chip" data-sfilter="right">Đã từng làm đúng</button>
+            <button class="chip" data-sfilter="attempted">Tất cả câu đã làm</button>
+          </div>
+          <button class="btn btn-primary btn-sm" id="practiceAllWrongBtn">🔁 Luyện lại tất cả câu từng sai</button>
+        </div>
+        <div id="wrongStatsList" class="bank-list"></div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 6: QUESTION BANK & FAVORITES ==================== -->
+    <section class="tab-panel" id="panel-bank">
+      <div class="bank-header-card">
+        <div class="bank-search-row">
+          <input type="search" id="bankSearchInput" class="search-input"
+            placeholder="Tìm theo số câu, nội dung câu hỏi, đáp án, ghi chú..." />
+          <label class="toggle-label">
+            <input type="checkbox" id="bankShowAnsToggle" checked />
+            <span>Hiện đáp án</span>
+          </label>
+          <label class="toggle-label">
+            <input type="checkbox" id="bankHighlightToggle" checked />
+            <span>Từ khóa gốc</span>
+          </label>
+        </div>
+        <div class="panel-toolbar" style="margin-top:12px;margin-bottom:0;">
+          <div class="filter-chips" id="bankFilterChips">
+            <button class="chip active" data-bfilter="all">Tất cả (415)</button>
+            <button class="chip" data-bfilter="favorite">❤️ Đã thả tim (<span id="bankFavCount">0</span>)</button>
+            <button class="chip" data-bfilter="mastered">✓ Đã thuộc</button>
+            <button class="chip" data-bfilter="learning">🔁 Cần ôn</button>
+            <button class="chip" data-bfilter="wrong">❌ Từng làm sai</button>
+            <button class="chip" data-bfilter="unseen">○ Chưa học</button>
+          </div>
+          <div class="toolbar-actions">
+            <button class="btn btn-soft btn-sm" id="bankToFlashcardBtn">🗂️ Lật thẻ bộ lọc này</button>
+            <button class="btn btn-primary btn-sm" id="bankToLearnBtn">🧠 Học bộ lọc này</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="bank-result-meta" id="bankResultMeta">Hiển thị 415 câu hỏi</div>
+      <div id="bankList" class="bank-list"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>💖 Chúc <strong>Bột iuu thi tốt</strong> đạt điểm A+ môn VNR202! • Mọi tiến trình &amp; lịch sử được tự động lưu
+      trên trình duyệt của Bột.</p>
+  </footer>
+
+  <!-- Question Quick-View Modal (used by Study Tip links & stats) -->
+  <div class="modal-backdrop hidden" id="questionModal" role="dialog" aria-modal="true" aria-labelledby="qmTitle">
+    <div class="modal-box">
+      <div class="modal-head">
+        <div class="modal-head-left">
+          <span class="q-tag" id="qmTitle">Câu 1</span>
+          <span class="status-badge" id="qmStatus">Chưa học</span>
+        </div>
+        <div class="modal-head-right">
+          <button class="heart-btn" id="qmHeartBtn" title="Thả tim lưu câu hỏi">🤍</button>
+          <button class="modal-close" id="qmCloseBtn" aria-label="Đóng">✕</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <h3 class="qm-question" id="qmQuestion"></h3>
+        <div class="qm-options" id="qmOptions"></div>
+        <div class="qm-note hidden" id="qmNote"></div>
+        <div class="qm-tips" id="qmTips"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-soft btn-sm" id="qmToggleAnsBtn">👁️ Ẩn/Hiện đáp án</button>
+        <div class="modal-foot-right">
+          <button class="btn btn-soft btn-sm" id="qmOpenFcBtn">Mở ở Thẻ ghi nhớ</button>
+          <button class="btn btn-primary btn-sm" id="qmMarkMasteredBtn">✓ Đánh dấu đã thuộc</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings / Backup Modal -->
+  <div class="modal-backdrop hidden" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="smTitle">
+    <div class="modal-box modal-sm">
+      <div class="modal-head">
+        <h3 id="smTitle">⚙️ Quản lý dữ liệu học tập</h3>
+        <button class="modal-close" id="smCloseBtn" aria-label="Đóng">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="sm-desc">Tiến trình, câu thả tim ❤️ và lịch sử làm đề được lưu tự động trong <code>localStorage</code>
+          của trình duyệt này. Bột có thể sao lưu để chuyển sang máy/điện thoại khác nhé!</p>
+        <div class="sm-actions">
+          <button class="btn btn-primary btn-block" id="exportDataBtn">⬇️ Tải file sao lưu (.json)</button>
+          <label class="btn btn-soft btn-block file-btn-label">
+            ⬆️ Khôi phục từ file sao lưu (.json)
+            <input type="file" id="importDataInput" accept=".json" hidden />
+          </label>
+          <hr class="sm-hr" />
+          <button class="btn btn-danger-outline btn-block" id="resetAllDataBtn">🗑️ Xóa toàn bộ tiến trình &amp; lịch
+            sử</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
