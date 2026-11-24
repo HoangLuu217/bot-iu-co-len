@@ -105,6 +105,10 @@
 
   // ==================== HELPERS ====================
   const $ = (id) => document.getElementById(id);
+  const on = (id, evt, fn) => {
+    const el = $(id);
+    if (el) el.addEventListener(evt, fn);
+  };
 
   function escapeHtml(str) {
     return String(str)
@@ -1207,8 +1211,8 @@
       if (fcDeck.length) renderTipsSidebar('fcTipsSidebar', 'fcToggleTipAsideBtn', fcDeck[fcIdx]);
       if (learnDeck.length) renderTipsSidebar('learnTipsSidebar', 'learnToggleTipAsideBtn', learnDeck[learnIdx]);
     };
-    $('fcToggleTipAsideBtn').addEventListener('click', toggleTipAside);
-    $('learnToggleTipAsideBtn').addEventListener('click', toggleTipAside);
+    on('fcToggleTipAsideBtn', 'click', toggleTipAside);
+    on('learnToggleTipAsideBtn', 'click', toggleTipAside);
     $('fcFilters').addEventListener('click', (e) => {
       const chip = e.target.closest('.chip');
       if (!chip) return;
@@ -1731,5 +1735,9 @@
     rebuildFlashcardDeck(false);
   }
 
-  init();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
