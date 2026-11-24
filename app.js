@@ -1293,23 +1293,35 @@
     const handleFcJump = () => {
       const raw = $('fcJumpInput').value.trim();
       if (!raw) return;
-      let idx = fcDeck.findIndex((id) => id.toLowerCase() === raw.toLowerCase());
+      const cleaned = raw.replace(/^(câu|cau|#)\s*/i, '').trim().toLowerCase();
+      if (!cleaned) return;
+
+      const matchIdx = (arr, key) => {
+        let i = arr.findIndex((id) => id.toLowerCase() === key);
+        if (i === -1) i = arr.findIndex((id) => id.toLowerCase() === `${key}a`);
+        return i;
+      };
+
+      let idx = matchIdx(fcDeck, cleaned);
       if (idx === -1) {
-        // Also allow searching in all questions
-        const allIdx = QUESTIONS.findIndex((q) => q.id.toLowerCase() === raw.toLowerCase());
+        const allIds = QUESTIONS.map((q) => q.id);
+        const allIdx = matchIdx(allIds, cleaned);
         if (allIdx >= 0) {
           fcCustomSet = null;
           state.prefs.fcFilter = 'all';
-          fcDeck = QUESTIONS.map((q) => q.id);
+          fcDeck = allIds;
           idx = allIdx;
         }
       }
       if (idx >= 0) {
         fcIdx = idx;
         renderFlashcard();
+        if (fcDeck[idx].toLowerCase() === `${cleaned}a`) {
+          showToast(`📌 Câu ${cleaned} trong đề gốc gồm 2 câu tách (${cleaned}a & ${cleaned}b) — đang mở Câu ${cleaned}a!`);
+        }
         $('fcJumpInput').value = '';
       } else {
-        showToast(`Không tìm thấy Câu ${raw} (nhập 1–413, 106a/b, 318a/b)`);
+        showToast(`Không tìm thấy Câu ${raw} (nhập số từ 1 đến 413)`);
       }
     };
     $('fcJumpBtn').addEventListener('click', handleFcJump);
