@@ -424,23 +424,27 @@ mark.kw-hl {
 }
 
 .btn-success {
-  background: var(--ok-bg);
-  color: var(--ok-text);
-  border-color: var(--ok-border);
+  background: var(--pink-50);
+  color: var(--pink-700);
+  border-color: var(--pink-400);
 }
 
 .btn-success:hover:not(:disabled) {
-  background: #d1fae5;
+  background: var(--pink-100);
+  border-color: var(--pink-600);
+  color: var(--pink-700);
 }
 
 .btn-warn {
-  background: var(--warn-bg);
-  color: var(--warn-text);
-  border-color: var(--warn-border);
+  background: var(--bg);
+  color: var(--pink-600);
+  border-color: var(--pink-300);
 }
 
 .btn-warn:hover:not(:disabled) {
-  background: #fef3c7;
+  background: var(--pink-50);
+  border-color: var(--pink-500);
+  color: var(--pink-700);
 }
 
 .btn-danger-outline {
