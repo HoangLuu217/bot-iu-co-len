@@ -14,7 +14,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Quicksand:wght@600;700&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=7" />
+  <link rel="stylesheet" href="styles.css?v=9" />
 </head>
 
 <body>
@@ -32,11 +32,11 @@
       </div>
 
       <div class="header-stats">
-        <div class="stat-pill" title="Tiến độ đã thuộc">
+        <div class="stat-pill" title="Tiến độ Bột đã thuộc">
           <span class="stat-dot dot-mastered"></span>
-          <span>Thuộc: <strong id="hdrMastered">0</strong>/<span id="hdrTotal">415</span></span>
+          <span><span class="hide-xs">Thuộc: </span><strong id="hdrMastered">0</strong>/<span id="hdrTotal">415</span></span>
         </div>
-        <div class="stat-pill stat-pill-clickable" id="hdrFavBtn" title="Xem các câu đã thả tim">
+        <div class="stat-pill stat-pill-clickable" id="hdrFavBtn" title="Xem các câu Bột đã thả tim">
           <span>❤️</span>
           <span><strong id="hdrFavorites">0</strong></span>
         </div>
@@ -88,13 +88,21 @@
     <!-- ==================== TAB 1: FLASHCARDS ==================== -->
     <section class="tab-panel active" id="panel-flashcards">
       <div class="panel-toolbar">
+        <select id="fcFilterSelect" class="mobile-filter-select" aria-label="Chọn bộ lọc thẻ">
+          <option value="all">🌸 Tất cả (415)</option>
+          <option value="unseen">○ Bột chưa học (0)</option>
+          <option value="learning">↺ Bột cần ôn (0)</option>
+          <option value="mastered">✓ Bột đã thuộc (0)</option>
+          <option value="favorite">❤️ Bột yêu thích (0)</option>
+          <option value="wrong">❌ Bột từng sai (0)</option>
+        </select>
         <div class="filter-chips" id="fcFilters">
           <button class="chip active" data-filter="all">Tất cả (<span data-count="all">415</span>)</button>
-          <button class="chip" data-filter="unseen">Chưa học (<span data-count="unseen">0</span>)</button>
-          <button class="chip" data-filter="learning">Cần ôn (<span data-count="learning">0</span>)</button>
-          <button class="chip" data-filter="mastered">Đã thuộc (<span data-count="mastered">0</span>)</button>
-          <button class="chip" data-filter="favorite">❤️ Yêu thích (<span data-count="favorite">0</span>)</button>
-          <button class="chip" data-filter="wrong">❌ Từng sai (<span data-count="wrong">0</span>)</button>
+          <button class="chip" data-filter="unseen">Bột chưa học (<span data-count="unseen">0</span>)</button>
+          <button class="chip" data-filter="learning">Bột cần ôn (<span data-count="learning">0</span>)</button>
+          <button class="chip" data-filter="mastered">Bột đã thuộc (<span data-count="mastered">0</span>)</button>
+          <button class="chip" data-filter="favorite">❤️ Bột yêu thích (<span data-count="favorite">0</span>)</button>
+          <button class="chip" data-filter="wrong">❌ Bột từng sai (<span data-count="wrong">0</span>)</button>
         </div>
         <div class="toolbar-actions">
           <label class="toggle-label" title="Hiện từ khóa được bôi sáng từ file gốc">
@@ -102,8 +110,7 @@
             <span>Từ khóa gốc</span>
           </label>
           <button class="btn btn-soft btn-sm" id="fcShuffleBtn">🔀 Trộn thẻ</button>
-          <button class="btn btn-soft btn-sm" id="fcResetOrderBtn" title="Sắp xếp lại theo thứ tự câu gốc">↺ Thứ tự
-            gốc</button>
+          <button class="btn btn-soft btn-sm" id="fcResetOrderBtn" title="Sắp xếp lại theo thứ tự câu gốc">↺ Thứ tự gốc</button>
         </div>
       </div>
 
@@ -162,9 +169,9 @@
           <div class="fc-controls">
             <button class="btn btn-soft" id="fcPrevBtn" title="Phím ←">← Trước</button>
             <div class="fc-rate-group">
-              <button class="btn btn-warn" id="fcLearningBtn" title="Phím 1">↺ Cần ôn lại</button>
+              <button class="btn btn-warn" id="fcLearningBtn" title="Phím 1">↺ Bột cần ôn</button>
               <button class="btn btn-primary" id="fcFlipBtn" title="Phím Space">↻ Lật thẻ</button>
-              <button class="btn btn-success" id="fcMasteredBtn" title="Phím 2">✓ Đã thuộc</button>
+              <button class="btn btn-success" id="fcMasteredBtn" title="Phím 2">✓ Bột đã thuộc</button>
             </div>
             <button class="btn btn-soft" id="fcNextBtn" title="Phím →">Sau →</button>
           </div>
@@ -190,12 +197,19 @@
     <!-- ==================== TAB 2: LEARN MODE ==================== -->
     <section class="tab-panel" id="panel-learn">
       <div class="panel-toolbar">
+        <select id="learnFilterSelect" class="mobile-filter-select" aria-label="Chọn chế độ học bài">
+          <option value="smart">✨ Ưu tiên Bột chưa thuộc</option>
+          <option value="all">🌸 Tất cả (415)</option>
+          <option value="favorite">❤️ Bột yêu thích</option>
+          <option value="wrong">❌ Bột hay sai</option>
+          <option value="learning">↺ Bột cần ôn</option>
+        </select>
         <div class="filter-chips" id="learnFilters">
-          <button class="chip active" data-filter="smart">Ưu tiên chưa thuộc</button>
+          <button class="chip active" data-filter="smart">Ưu tiên Bột chưa thuộc</button>
           <button class="chip" data-filter="all">Tất cả (415)</button>
-          <button class="chip" data-filter="favorite">❤️ Yêu thích</button>
-          <button class="chip" data-filter="wrong">❌ Câu hay sai</button>
-          <button class="chip" data-filter="learning">🔁 Cần ôn lại</button>
+          <button class="chip" data-filter="favorite">❤️ Bột yêu thích</button>
+          <button class="chip" data-filter="wrong">❌ Bột hay sai</button>
+          <button class="chip" data-filter="learning">↺ Bột cần ôn</button>
         </div>
         <div class="toolbar-actions">
           <label class="toggle-label">
@@ -411,11 +425,17 @@
         </div>
 
         <div class="panel-toolbar">
+          <select id="resFilterSelect" class="mobile-filter-select" aria-label="Lọc câu trong kết quả đề thi">
+            <option value="all">🌸 Tất cả câu trong đề</option>
+            <option value="wrong">❌ Chỉ câu Bột sai</option>
+            <option value="right">✅ Chỉ câu Bột đúng</option>
+            <option value="favorite">❤️ Bột đã thả tim</option>
+          </select>
           <div class="filter-chips" id="resFilterChips">
             <button class="chip active" data-filter="all">Tất cả</button>
-            <button class="chip" data-filter="wrong">❌ Chỉ câu sai</button>
-            <button class="chip" data-filter="right">✅ Chỉ câu đúng</button>
-            <button class="chip" data-filter="favorite">❤️ Đã thả tim</button>
+            <button class="chip" data-filter="wrong">❌ Chỉ câu Bột sai</button>
+            <button class="chip" data-filter="right">✅ Chỉ câu Bột đúng</button>
+            <button class="chip" data-filter="favorite">❤️ Bột đã thả tim</button>
           </div>
         </div>
 
@@ -437,6 +457,13 @@
         </div>
       </div>
 
+      <select id="tipsGroupSelect" class="mobile-filter-select" aria-label="Chọn giai đoạn mẹo học">
+        <option value="all">✨ Tất cả chuyên đề (16 mẹo)</option>
+        <option value="Giai đoạn 1911–1945">🏛️ Giai đoạn 1911–1945</option>
+        <option value="Kháng chiến 1945–1975">⚔️ Kháng chiến 1945–1975</option>
+        <option value="Thống nhất & Đổi mới">🚀 Thống nhất &amp; Đổi mới</option>
+        <option value="Nghị quyết & Mẹo chống bẫy">📜 Nghị quyết &amp; Chống bẫy</option>
+      </select>
       <div class="filter-chips" id="tipsGroupChips">
         <button class="chip active" data-group="all">Tất cả (16 mẹo)</button>
         <button class="chip" data-group="Giai đoạn 1911–1945">Giai đoạn 1911–1945</button>
@@ -486,12 +513,17 @@
       <!-- Wrong questions analytics -->
       <div id="historyWrongView" class="hidden">
         <div class="panel-toolbar">
+          <select id="statsFilterSelect" class="mobile-filter-select" aria-label="Chọn thống kê câu hỏi">
+            <option value="wrong">❌ Bột hay làm sai nhất</option>
+            <option value="right">✅ Bột đã từng làm đúng</option>
+            <option value="attempted">📋 Tất cả câu Bột đã làm</option>
+          </select>
           <div class="filter-chips" id="statsFilterChips">
-            <button class="chip active" data-sfilter="wrong">Hay làm sai nhất</button>
-            <button class="chip" data-sfilter="right">Đã từng làm đúng</button>
-            <button class="chip" data-sfilter="attempted">Tất cả câu đã làm</button>
+            <button class="chip active" data-sfilter="wrong">Bột hay làm sai nhất</button>
+            <button class="chip" data-sfilter="right">Bột đã từng làm đúng</button>
+            <button class="chip" data-sfilter="attempted">Tất cả câu Bột đã làm</button>
           </div>
-          <button class="btn btn-primary btn-sm" id="practiceAllWrongBtn">🔁 Luyện lại tất cả câu từng sai</button>
+          <button class="btn btn-primary btn-sm" id="practiceAllWrongBtn">🔁 Luyện lại tất cả câu Bột sai</button>
         </div>
         <div id="wrongStatsList" class="bank-list"></div>
       </div>
@@ -513,13 +545,21 @@
           </label>
         </div>
         <div class="panel-toolbar" style="margin-top:12px;margin-bottom:0;">
+          <select id="bankFilterSelect" class="mobile-filter-select" aria-label="Bộ lọc kho câu hỏi">
+            <option value="all">🌸 Tất cả (415)</option>
+            <option value="favorite">❤️ Bột đã thả tim (0)</option>
+            <option value="mastered">✓ Bột đã thuộc</option>
+            <option value="learning">↺ Bột cần ôn</option>
+            <option value="wrong">❌ Bột từng làm sai</option>
+            <option value="unseen">○ Bột chưa học</option>
+          </select>
           <div class="filter-chips" id="bankFilterChips">
             <button class="chip active" data-bfilter="all">Tất cả (415)</button>
-            <button class="chip" data-bfilter="favorite">❤️ Đã thả tim (<span id="bankFavCount">0</span>)</button>
-            <button class="chip" data-bfilter="mastered">✓ Đã thuộc</button>
-            <button class="chip" data-bfilter="learning">🔁 Cần ôn</button>
-            <button class="chip" data-bfilter="wrong">❌ Từng làm sai</button>
-            <button class="chip" data-bfilter="unseen">○ Chưa học</button>
+            <button class="chip" data-bfilter="favorite">❤️ Bột đã thả tim (<span id="bankFavCount">0</span>)</button>
+            <button class="chip" data-bfilter="mastered">✓ Bột đã thuộc</button>
+            <button class="chip" data-bfilter="learning">↺ Bột cần ôn</button>
+            <button class="chip" data-bfilter="wrong">❌ Bột từng sai</button>
+            <button class="chip" data-bfilter="unseen">○ Bột chưa học</button>
           </div>
           <div class="toolbar-actions">
             <button class="btn btn-soft btn-sm" id="bankToFlashcardBtn">🗂️ Lật thẻ bộ lọc này</button>
@@ -594,8 +634,8 @@
   <!-- Toast Container -->
   <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
-  <script src="data.js?v=8"></script>
-  <script src="app.js?v=8"></script>
+  <script src="data.js?v=9"></script>
+  <script src="app.js?v=9"></script>
 </body>
 
 </html>

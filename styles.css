@@ -332,6 +332,30 @@ mark.kw-hl {
   gap: 8px;
 }
 
+.mobile-filter-select {
+  display: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: var(--pink-50);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23db2777' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  border: 1.5px solid var(--pink-300);
+  border-radius: var(--radius-pill);
+  padding: 9px 38px 9px 16px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--pink-700);
+  cursor: pointer;
+  outline: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.mobile-filter-select:focus {
+  border-color: var(--pink-600);
+  box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.14);
+}
+
 .chip {
   padding: 7px 14px;
   border-radius: var(--radius-pill);
@@ -2178,36 +2202,195 @@ kbd {
   }
 }
 
+@media (max-width: 768px) {
+  .filter-chips {
+    display: none;
+  }
+  .mobile-filter-select {
+    display: block;
+    width: 100%;
+  }
+  #tipsGroupSelect {
+    margin-bottom: 14px;
+  }
+  .shortcut-hint {
+    display: none;
+  }
+}
+
 @media (max-width: 640px) {
+  .hide-xs {
+    display: none;
+  }
   .header-inner {
-    padding: 10px 14px 8px;
+    padding: 8px 10px 6px;
+    gap: 6px;
+  }
+  .brand {
+    gap: 8px;
+    min-width: 0;
+  }
+  .brand-logo-wrap {
+    width: 38px;
+    height: 38px;
+    border-width: 2px;
   }
   .brand-title {
-    font-size: 1.2rem;
+    font-size: 1.05rem;
+    white-space: nowrap;
   }
   .brand-sub {
     display: none;
   }
-  .container {
-    padding: 16px 12px 36px;
+  .header-stats {
+    gap: 4px;
+    flex-shrink: 0;
   }
-  .fc-face {
-    padding: 18px 16px;
+  .stat-pill {
+    padding: 4px 8px;
+    font-size: 0.74rem;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .btn-icon-ghost {
+    width: 30px;
+    height: 30px;
+    font-size: 0.88rem;
+  }
+  .nav-inner {
+    padding: 5px 10px;
+    gap: 4px;
+  }
+  .nav-tab {
+    padding: 6px 11px;
+    font-size: 0.8rem;
+    gap: 4px;
+  }
+  .container {
+    padding: 12px 10px 30px;
+  }
+  .panel-toolbar {
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .toolbar-actions {
+    width: 100%;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .toolbar-actions .btn-sm {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+  }
+  .toggle-label {
+    font-size: 0.8rem;
+  }
+  .fc-meta-bar {
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .fc-counter {
+    font-size: 0.84rem;
+  }
+  .input-mini {
+    width: 90px;
+    padding: 4px 9px;
+    font-size: 0.78rem;
+  }
+  .status-badge {
+    padding: 3px 8px;
+    font-size: 0.72rem;
+  }
+  .heart-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 1rem;
+  }
+  .flashcard-scene {
+    margin-bottom: 12px;
   }
   .flashcard {
-    min-height: 430px;
+    min-height: 360px;
+  }
+  .fc-face {
+    padding: 14px 14px;
+  }
+  .fc-face-top {
+    margin-bottom: 10px;
+  }
+  .fc-hint {
+    font-size: 0.72rem;
+  }
+  .fc-question {
+    font-size: 1.03rem;
+    margin-bottom: 12px;
+    line-height: 1.45;
+  }
+  .fc-options-preview {
+    gap: 7px;
+  }
+  .fc-options-preview li {
+    padding: 9px 12px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  .fc-ans-item {
+    padding: 14px 16px;
+    font-size: 1rem;
+  }
+  .fc-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .fc-rate-group {
+    grid-column: 1 / -1;
+    order: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+    width: 100%;
+  }
+  .fc-rate-group .btn {
+    padding: 9px 6px;
+    font-size: 0.79rem;
+    white-space: nowrap;
+  }
+  #fcPrevBtn {
+    order: 2;
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 0.84rem;
+  }
+  #fcNextBtn {
+    order: 3;
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 0.84rem;
   }
   .learn-card, .exam-setup-card, .exam-q-card {
-    padding: 18px 16px;
+    padding: 16px 14px;
+    min-height: auto;
+  }
+  .learn-question, .exam-question {
+    font-size: 1.04rem;
+    margin-bottom: 14px;
+  }
+  .opt-btn {
+    padding: 12px 13px;
+    font-size: 0.92rem;
+    gap: 10px;
+  }
+  .opt-key {
+    width: 26px;
+    height: 26px;
+    font-size: 0.8rem;
   }
   .setup-grid, .bank-opts {
     grid-template-columns: 1fr;
   }
   .exam-grid {
     grid-template-columns: repeat(6, 1fr);
-  }
-  .fc-controls {
-    justify-content: center;
   }
   .result-summary-card {
     justify-content: center;

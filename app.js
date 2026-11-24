@@ -217,9 +217,9 @@
 
   function getStatusLabel(qid) {
     const st = state.progress[qid];
-    if (st === 'mastered') return { text: '✓ Đã thuộc', cls: 'is-mastered' };
-    if (st === 'learning') return { text: '🔁 Cần ôn lại', cls: 'is-learning' };
-    return { text: '○ Chưa học', cls: '' };
+    if (st === 'mastered') return { text: '✓ Bột đã thuộc', cls: 'is-mastered' };
+    if (st === 'learning') return { text: '↺ Bột cần ôn', cls: 'is-learning' };
+    return { text: '○ Bột chưa học', cls: '' };
   }
 
   function hasBeenWrong(qid) {
@@ -271,6 +271,7 @@
   function jumpToTip(tipId) {
     tipsGroup = 'all';
     $('tipsSearchInput').value = '';
+    if ($('tipsGroupSelect')) $('tipsGroupSelect').value = 'all';
     document.querySelectorAll('#tipsGroupChips .chip').forEach((c) => {
       c.classList.toggle('active', c.dataset.group === 'all');
     });
@@ -361,6 +362,34 @@
     document.querySelectorAll('#fcFilters [data-count]').forEach((el) => {
       el.textContent = counts[el.dataset.count] ?? 0;
     });
+    const fcSel = $('fcFilterSelect');
+    if (fcSel) {
+      const labels = {
+        all: `🌸 Tất cả (${counts.all})`,
+        unseen: `○ Bột chưa học (${counts.unseen})`,
+        learning: `↺ Bột cần ôn (${counts.learning})`,
+        mastered: `✓ Bột đã thuộc (${counts.mastered})`,
+        favorite: `❤️ Bột yêu thích (${counts.favorite})`,
+        wrong: `❌ Bột từng sai (${counts.wrong})`
+      };
+      Array.from(fcSel.options).forEach((opt) => {
+        if (labels[opt.value]) opt.textContent = labels[opt.value];
+      });
+    }
+    const bankSel = $('bankFilterSelect');
+    if (bankSel) {
+      const bankLabels = {
+        all: `🌸 Tất cả (${counts.all})`,
+        favorite: `❤️ Bột đã thả tim (${counts.favorite})`,
+        mastered: `✓ Bột đã thuộc (${counts.mastered})`,
+        learning: `↺ Bột cần ôn (${counts.learning})`,
+        wrong: `❌ Bột từng sai (${counts.wrong})`,
+        unseen: `○ Bột chưa học (${counts.unseen})`
+      };
+      Array.from(bankSel.options).forEach((opt) => {
+        if (bankLabels[opt.value]) opt.textContent = bankLabels[opt.value];
+      });
+    }
   }
 
   function getFilteredIds(filter) {
@@ -392,6 +421,7 @@
 
   function renderFlashcard() {
     $('fcHighlightToggle').checked = !!state.prefs.fcHighlight;
+    if ($('fcFilterSelect') && !fcCustomSet) $('fcFilterSelect').value = state.prefs.fcFilter;
     document.querySelectorAll('#fcFilters .chip').forEach((c) => {
       c.classList.toggle('active', !fcCustomSet && c.dataset.filter === state.prefs.fcFilter);
     });
@@ -511,6 +541,7 @@
   function renderLearnQuestion() {
     $('learnShuffleOpt').checked = !!state.prefs.learnShuffleOpt;
     $('learnHighlightToggle').checked = !!state.prefs.learnHighlight;
+    if ($('learnFilterSelect') && !learnCustomSet) $('learnFilterSelect').value = state.prefs.learnFilter || 'smart';
     document.querySelectorAll('#learnFilters .chip').forEach((c) => {
       c.classList.toggle('active', !learnCustomSet && c.dataset.filter === state.prefs.learnFilter);
     });
@@ -866,6 +897,7 @@
     $('resPracticeWrongBtn').disabled = wrongIds.length === 0;
     $('resPracticeWrongBtn').textContent = wrongIds.length ? `🔁 Ôn lại ${wrongIds.length} câu sai` : '🎉 Không có câu nào sai!';
 
+    if ($('resFilterSelect')) $('resFilterSelect').value = resFilter;
     document.querySelectorAll('#resFilterChips .chip').forEach((c) => {
       c.classList.toggle('active', c.dataset.filter === resFilter);
     });
@@ -1115,6 +1147,7 @@
     if (resetPage) bankVisibleCount = 30;
     $('bankShowAnsToggle').checked = !!state.prefs.bankShowAns;
     $('bankHighlightToggle').checked = !!state.prefs.bankHighlight;
+    if ($('bankFilterSelect')) $('bankFilterSelect').value = bankFilter;
     document.querySelectorAll('#bankFilterChips .chip').forEach((c) => {
       c.classList.toggle('active', c.dataset.bfilter === bankFilter);
     });
@@ -1239,6 +1272,12 @@
       saveState();
       rebuildFlashcardDeck(false);
     });
+    on('fcFilterSelect', 'change', (e) => {
+      fcCustomSet = null;
+      state.prefs.fcFilter = e.target.value;
+      saveState();
+      rebuildFlashcardDeck(false);
+    });
 
     $('fcHighlightToggle').addEventListener('change', (e) => {
       state.prefs.fcHighlight = e.target.checked;
@@ -1357,6 +1396,12 @@
       if (!chip) return;
       learnCustomSet = null;
       state.prefs.learnFilter = chip.dataset.filter;
+      saveState();
+      buildLearnDeck();
+    });
+    on('learnFilterSelect', 'change', (e) => {
+      learnCustomSet = null;
+      state.prefs.learnFilter = e.target.value;
       saveState();
       buildLearnDeck();
     });
@@ -1532,6 +1577,11 @@
       resFilter = chip.dataset.filter;
       renderExamResult(viewingResultAttempt);
     });
+    on('resFilterSelect', 'change', (e) => {
+      if (!viewingResultAttempt) return;
+      resFilter = e.target.value;
+      renderExamResult(viewingResultAttempt);
+    });
 
     $('resNewExamBtn').addEventListener('click', () => {
       viewingResultAttempt = null;
@@ -1551,6 +1601,14 @@
       const chip = e.target.closest('.chip');
       if (!chip) return;
       tipsGroup = chip.dataset.group;
+      if ($('tipsGroupSelect')) $('tipsGroupSelect').value = tipsGroup;
+      document.querySelectorAll('#tipsGroupChips .chip').forEach((c) => {
+        c.classList.toggle('active', c.dataset.group === tipsGroup);
+      });
+      renderTips();
+    });
+    on('tipsGroupSelect', 'change', (e) => {
+      tipsGroup = e.target.value;
       document.querySelectorAll('#tipsGroupChips .chip').forEach((c) => {
         c.classList.toggle('active', c.dataset.group === tipsGroup);
       });
@@ -1588,6 +1646,14 @@
       const chip = e.target.closest('.chip');
       if (!chip) return;
       statsFilter = chip.dataset.sfilter;
+      if ($('statsFilterSelect')) $('statsFilterSelect').value = statsFilter;
+      document.querySelectorAll('#statsFilterChips .chip').forEach((c) => {
+        c.classList.toggle('active', c.dataset.sfilter === statsFilter);
+      });
+      renderHistoryTab();
+    });
+    on('statsFilterSelect', 'change', (e) => {
+      statsFilter = e.target.value;
       document.querySelectorAll('#statsFilterChips .chip').forEach((c) => {
         c.classList.toggle('active', c.dataset.sfilter === statsFilter);
       });
@@ -1649,6 +1715,10 @@
       const chip = e.target.closest('.chip');
       if (!chip) return;
       bankFilter = chip.dataset.bfilter;
+      renderBank(true);
+    });
+    on('bankFilterSelect', 'change', (e) => {
+      bankFilter = e.target.value;
       renderBank(true);
     });
     $('bankList').addEventListener('click', (e) => {
