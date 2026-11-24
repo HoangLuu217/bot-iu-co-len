@@ -119,59 +119,71 @@
         <button class="btn btn-primary" id="fcBackAllBtn">Xem tất cả 415 câu</button>
       </div>
 
-      <div id="fcStage" class="fc-stage">
-        <div class="fc-meta-bar">
-          <span class="fc-counter" id="fcCounter">Thẻ 1 / 415</span>
-          <div class="fc-jump-box">
-            <input type="text" id="fcJumpInput" class="input-mini" placeholder="Đi tới câu..."
-              aria-label="Đi tới số câu" />
-            <button class="btn btn-soft btn-xs" id="fcJumpBtn">Đi</button>
-          </div>
-          <div class="fc-badges">
-            <span class="status-badge" id="fcStatusBadge">Chưa học</span>
-            <button class="heart-btn" id="fcHeartBtn" title="Thả tim lưu câu hỏi (Phím H)"
-              aria-label="Thả tim">🤍</button>
-          </div>
-        </div>
-
-        <!-- 3D Flip Card -->
-        <div class="flashcard-scene" id="fcScene">
-          <div class="flashcard" id="fcCard" tabindex="0" role="button" aria-label="Nhấn để lật thẻ">
-            <div class="fc-face fc-front">
-              <div class="fc-face-top">
-                <span class="q-tag" id="fcFrontTag">Câu 1</span>
-                <span class="fc-hint">Nhấn thẻ hoặc Space để xem đáp án ↻</span>
-              </div>
-              <div class="fc-question" id="fcQuestion"></div>
-              <ul class="fc-options-preview" id="fcOptionsFront"></ul>
-              <div class="fc-tips-inline" id="fcTipsFront"></div>
+      <div id="fcStage" class="study-split-layout">
+        <div class="fc-stage">
+          <div class="fc-meta-bar">
+            <span class="fc-counter" id="fcCounter">Thẻ 1 / 415</span>
+            <div class="fc-jump-box">
+              <input type="text" id="fcJumpInput" class="input-mini" placeholder="Đi tới câu..."
+                aria-label="Đi tới số câu" />
+              <button class="btn btn-soft btn-xs" id="fcJumpBtn">Đi</button>
             </div>
-
-            <div class="fc-face fc-back">
-              <div class="fc-face-top">
-                <span class="q-tag" id="fcBackTag">Đáp án • Câu 1</span>
-                <span class="fc-hint">Nhấn để lật lại ↺</span>
-              </div>
-              <div class="fc-answer-box" id="fcAnswerBox"></div>
-              <div class="fc-note-box hidden" id="fcNoteBox"></div>
-              <div class="fc-tips-inline" id="fcTipsBack"></div>
+            <div class="fc-badges">
+              <span class="status-badge" id="fcStatusBadge">Chưa học</span>
+              <button class="heart-btn" id="fcHeartBtn" title="Thả tim lưu câu hỏi (Phím H)"
+                aria-label="Thả tim">🤍</button>
             </div>
           </div>
-        </div>
 
-        <!-- Flashcard Controls -->
-        <div class="fc-controls">
-          <button class="btn btn-soft" id="fcPrevBtn" title="Phím ←">← Trước</button>
-          <div class="fc-rate-group">
-            <button class="btn btn-warn" id="fcLearningBtn" title="Phím 1">🔁 Cần ôn lại</button>
-            <button class="btn btn-primary" id="fcFlipBtn" title="Phím Space">↻ Lật thẻ</button>
-            <button class="btn btn-success" id="fcMasteredBtn" title="Phím 2">✓ Đã thuộc</button>
+          <!-- 3D Flip Card -->
+          <div class="flashcard-scene" id="fcScene">
+            <div class="flashcard" id="fcCard" tabindex="0" role="button" aria-label="Nhấn để lật thẻ">
+              <div class="fc-face fc-front">
+                <div class="fc-face-top">
+                  <span class="q-tag" id="fcFrontTag">Câu 1</span>
+                  <span class="fc-hint">Nhấn thẻ hoặc Space để xem đáp án ↻</span>
+                </div>
+                <div class="fc-question" id="fcQuestion"></div>
+                <ul class="fc-options-preview" id="fcOptionsFront"></ul>
+              </div>
+
+              <div class="fc-face fc-back">
+                <div class="fc-face-top">
+                  <span class="q-tag" id="fcBackTag">Đáp án • Câu 1</span>
+                  <span class="fc-hint">Nhấn để lật lại ↺</span>
+                </div>
+                <div class="fc-answer-box" id="fcAnswerBox"></div>
+                <div class="fc-note-box hidden" id="fcNoteBox"></div>
+              </div>
+            </div>
           </div>
-          <button class="btn btn-soft" id="fcNextBtn" title="Phím →">Sau →</button>
+
+          <!-- Flashcard Controls -->
+          <div class="fc-controls">
+            <button class="btn btn-soft" id="fcPrevBtn" title="Phím ←">← Trước</button>
+            <div class="fc-rate-group">
+              <button class="btn btn-warn" id="fcLearningBtn" title="Phím 1">🔁 Cần ôn lại</button>
+              <button class="btn btn-primary" id="fcFlipBtn" title="Phím Space">↻ Lật thẻ</button>
+              <button class="btn btn-success" id="fcMasteredBtn" title="Phím 2">✓ Đã thuộc</button>
+            </div>
+            <button class="btn btn-soft" id="fcNextBtn" title="Phím →">Sau →</button>
+          </div>
+
+          <p class="shortcut-hint">Phím tắt: <kbd>Space</kbd> Lật thẻ • <kbd>←</kbd>/<kbd>→</kbd> Chuyển thẻ •
+            <kbd>1</kbd> Cần ôn • <kbd>2</kbd> Đã thuộc • <kbd>H</kbd> Thả tim
+          </p>
         </div>
 
-        <p class="shortcut-hint">Phím tắt: <kbd>Space</kbd> Lật thẻ • <kbd>←</kbd>/<kbd>→</kbd> Chuyển thẻ •
-          <kbd>1</kbd> Cần ôn • <kbd>2</kbd> Đã thuộc • <kbd>H</kbd> Thả tim</p>
+        <!-- Right Sidebar: Study Tips for current Flashcard -->
+        <aside class="tips-aside" aria-label="Mẹo học áp dụng">
+          <div class="tips-aside-card">
+            <div class="tips-aside-head">
+              <h3>✨ Mẹo học câu này</h3>
+              <button type="button" class="btn btn-soft btn-xs" id="fcToggleTipAsideBtn">👁️ Ẩn mẹo</button>
+            </div>
+            <div class="tips-aside-body" id="fcTipsSidebar"></div>
+          </div>
+        </aside>
       </div>
     </section>
 
@@ -210,46 +222,58 @@
         <button class="btn btn-primary" id="learnBackAllBtn">Học tất cả 415 câu</button>
       </div>
 
-      <div id="learnStage" class="learn-card">
-        <div class="learn-top">
-          <div class="learn-progress-wrap">
-            <div class="learn-progress-text">
-              <span id="learnCounter">Câu 1 / 415</span>
-              <span id="learnSessionScore">Phiên này: 0 đúng • 0 sai</span>
+      <div id="learnStage" class="study-split-layout">
+        <div class="learn-card">
+          <div class="learn-top">
+            <div class="learn-progress-wrap">
+              <div class="learn-progress-text">
+                <span id="learnCounter">Câu 1 / 415</span>
+                <span id="learnSessionScore">Phiên này: 0 đúng • 0 sai</span>
+              </div>
+              <div class="mini-progress">
+                <div id="learnProgressBar" class="mini-progress-fill"></div>
+              </div>
             </div>
-            <div class="mini-progress">
-              <div id="learnProgressBar" class="mini-progress-fill"></div>
+            <button class="heart-btn" id="learnHeartBtn" title="Thả tim lưu câu hỏi">🤍</button>
+          </div>
+
+          <div class="learn-q-header">
+            <span class="q-tag" id="learnQTag">Câu 1</span>
+            <span class="multi-badge hidden" id="learnMultiBadge">Chọn nhiều đáp án</span>
+            <span class="stat-mini-badge" id="learnHistBadge"></span>
+          </div>
+
+          <h2 class="learn-question" id="learnQuestion"></h2>
+          <div class="learn-options" id="learnOptions"></div>
+
+          <div class="learn-multi-submit hidden" id="learnMultiSubmitWrap">
+            <button class="btn btn-primary" id="learnMultiSubmitBtn">Kiểm tra đáp án</button>
+          </div>
+
+          <div class="learn-feedback hidden" id="learnFeedback">
+            <div class="feedback-title" id="learnFeedbackTitle"></div>
+            <div class="feedback-note hidden" id="learnFeedbackNote"></div>
+          </div>
+
+          <div class="learn-footer">
+            <button class="btn btn-soft" id="learnPrevBtn">← Câu trước</button>
+            <div class="learn-footer-right">
+              <button class="btn btn-soft" id="learnSkipBtn">Bỏ qua</button>
+              <button class="btn btn-primary" id="learnNextBtn">Câu tiếp theo →</button>
             </div>
           </div>
-          <button class="heart-btn" id="learnHeartBtn" title="Thả tim lưu câu hỏi">🤍</button>
         </div>
 
-        <div class="learn-q-header">
-          <span class="q-tag" id="learnQTag">Câu 1</span>
-          <span class="multi-badge hidden" id="learnMultiBadge">Chọn nhiều đáp án</span>
-          <span class="stat-mini-badge" id="learnHistBadge"></span>
-        </div>
-
-        <h2 class="learn-question" id="learnQuestion"></h2>
-        <div class="learn-options" id="learnOptions"></div>
-
-        <div class="learn-multi-submit hidden" id="learnMultiSubmitWrap">
-          <button class="btn btn-primary" id="learnMultiSubmitBtn">Kiểm tra đáp án</button>
-        </div>
-
-        <div class="learn-feedback hidden" id="learnFeedback">
-          <div class="feedback-title" id="learnFeedbackTitle"></div>
-          <div class="feedback-note hidden" id="learnFeedbackNote"></div>
-          <div class="feedback-tips" id="learnFeedbackTips"></div>
-        </div>
-
-        <div class="learn-footer">
-          <button class="btn btn-soft" id="learnPrevBtn">← Câu trước</button>
-          <div class="learn-footer-right">
-            <button class="btn btn-soft" id="learnSkipBtn">Bỏ qua</button>
-            <button class="btn btn-primary" id="learnNextBtn">Câu tiếp theo →</button>
+        <!-- Right Sidebar: Study Tips for current Learn Question -->
+        <aside class="tips-aside" aria-label="Mẹo học áp dụng">
+          <div class="tips-aside-card">
+            <div class="tips-aside-head">
+              <h3>✨ Mẹo học câu này</h3>
+              <button type="button" class="btn btn-soft btn-xs" id="learnToggleTipAsideBtn">👁️ Ẩn mẹo</button>
+            </div>
+            <div class="tips-aside-body" id="learnTipsSidebar"></div>
           </div>
-        </div>
+        </aside>
       </div>
     </section>
 
@@ -510,7 +534,7 @@
   </main>
 
   <footer class="site-footer">
-    <p>💖 Chúc <strong>Bột iuu thi tốt</strong> đạt điểm A+ môn VNR202! • Mọi tiến trình &amp; lịch sử được tự động lưu
+    <p>💖 Chúc <strong>Bột iuu thi tốt</strong> đạt điểm 10 môn VNR202! • Mọi tiến trình &amp; lịch sử được tự động lưu
       trên trình duyệt của Bột.</p>
   </footer>
 

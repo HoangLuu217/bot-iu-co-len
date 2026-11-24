@@ -38,7 +38,8 @@
         learnShuffleOpt: true,
         learnHighlight: true,
         bankShowAns: true,
-        bankHighlight: true
+        bankHighlight: true,
+        showTipAside: true
       }
     };
   }
@@ -280,13 +281,52 @@
     }, 80);
   }
 
-  // Delegate tip-pill clicks anywhere
+  function renderTipsSidebar(containerId, toggleBtnId, qid) {
+    const box = $(containerId);
+    const btn = $(toggleBtnId);
+    if (!box || !btn) return;
+    const shown = state.prefs.showTipAside !== false;
+    btn.textContent = shown ? '👁️ Ẩn mẹo' : '👁️ Hiện mẹo';
+    if (!shown) {
+      box.innerHTML = `<div class="tips-aside-hidden-msg">Mẹo học đang được ẩn để Bột tự kiểm tra trí nhớ.<br/>Bấm <strong>👁️ Hiện mẹo</strong> bất cứ lúc nào nhé!</div>`;
+      return;
+    }
+    const tips = Q_TO_TIPS.get(qid) || [];
+    if (!tips.length) {
+      box.innerHTML = `<div class="tips-aside-hidden-msg">Câu này chưa có mẹo liên kết.</div>`;
+      return;
+    }
+    box.innerHTML = tips
+      .map(
+        (t) => `
+      <div class="tips-aside-item">
+        <div class="tips-aside-title">${t.icon} ${escapeHtml(t.title)}</div>
+        <ul class="tips-aside-bullets">
+          ${t.bullets.map((b) => `<li>${b}</li>`).join('')}
+        </ul>
+        <div class="tips-aside-footer">
+          <button type="button" class="btn btn-soft btn-xs" data-jump-tip="${t.id}">Xem đầy đủ &amp; ${t.questionIds.length} câu →</button>
+          <button type="button" class="btn btn-primary btn-xs" data-aside-tip-learn="${t.id}">🧠 Ôn bộ này</button>
+        </div>
+      </div>`
+      )
+      .join('');
+  }
+
+  // Delegate tip-pill & sidebar tip clicks anywhere
   document.addEventListener('click', (e) => {
     const tipBtn = e.target.closest('[data-jump-tip]');
     if (tipBtn) {
       e.stopPropagation();
       closeQuestionModal();
       jumpToTip(tipBtn.dataset.jumpTip);
+      return;
+    }
+    const asideLearn = e.target.closest('[data-aside-tip-learn]');
+    if (asideLearn) {
+      e.stopPropagation();
+      const tip = TIP_BY_ID.get(asideLearn.dataset.asideTipLearn);
+      if (tip) openCustomLearn(tip.title, tip.questionIds);
       return;
     }
     const qLink = e.target.closest('[data-open-q]');
@@ -395,9 +435,7 @@
       noteEl.classList.add('hidden');
     }
 
-    const tipsHtml = buildTipPillsHtml(q.id);
-    $('fcTipsFront').innerHTML = tipsHtml;
-    $('fcTipsBack').innerHTML = tipsHtml;
+    renderTipsSidebar('fcTipsSidebar', 'fcToggleTipAsideBtn', q.id);
 
     $('fcPrevBtn').disabled = fcIdx === 0;
     $('fcNextBtn').disabled = fcIdx === fcDeck.length - 1;
@@ -517,6 +555,7 @@
     $('learnFeedback').classList.add('hidden');
     $('learnPrevBtn').disabled = learnIdx === 0;
     $('learnNextBtn').textContent = learnIdx === learnDeck.length - 1 ? 'Hoàn thành 🎉' : 'Câu tiếp theo →';
+    renderTipsSidebar('learnTipsSidebar', 'learnToggleTipAsideBtn', q.id);
   }
 
   function evaluateLearnAnswer(q, chosenKeys) {
@@ -561,7 +600,6 @@
     } else {
       noteEl.classList.add('hidden');
     }
-    $('learnFeedbackTips').innerHTML = buildTipPillsHtml(q.id);
     $('learnSessionScore').textContent = `Phiên này: ${learnSessionRight} đúng • ${learnSessionWrong} sai`;
   }
 
@@ -1163,6 +1201,14 @@
     });
 
     // Flashcard Events
+    const toggleTipAside = () => {
+      state.prefs.showTipAside = state.prefs.showTipAside === false;
+      saveState();
+      if (fcDeck.length) renderTipsSidebar('fcTipsSidebar', 'fcToggleTipAsideBtn', fcDeck[fcIdx]);
+      if (learnDeck.length) renderTipsSidebar('learnTipsSidebar', 'learnToggleTipAsideBtn', learnDeck[learnIdx]);
+    };
+    $('fcToggleTipAsideBtn').addEventListener('click', toggleTipAside);
+    $('learnToggleTipAsideBtn').addEventListener('click', toggleTipAside);
     $('fcFilters').addEventListener('click', (e) => {
       const chip = e.target.closest('.chip');
       if (!chip) return;
