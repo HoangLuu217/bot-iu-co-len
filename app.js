@@ -179,7 +179,61 @@
     el.textContent = msg;
     el.classList.remove('hidden');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.add('hidden'), 2400);
+    toastTimer = setTimeout(() => el.classList.add('hidden'), 2600);
+  }
+
+  const PRAISE_MESSAGES = [
+    '💖 Chính xác tuyệt đối! Bột của anh giỏi quá trời luôn!',
+    '🌸 Đúng rồiii! Em bé Bột thông minh số 1 luôn á!',
+    '🏆 Xuất sắc quá Bột ơiii! Cứ đà này là 10 điểm chắc luôn!',
+    '💕 Chuẩn không cần chỉnh! Thương Bột chăm học quá đi!',
+    '✨ Đỉnh nóc kịch trần! Không câu nào làm khó được Bột hết!',
+    '🥰 Giỏi quá đi thôiii! Anh tự hào về Bột lắm luôn!',
+    '🎀 Quá siêu! Bột nhớ bài tốt ghê, thưởng 1000 tim nè!',
+    '💗 Tuyệt vời! Bột iuu làm câu nào chuẩn câu đó luôn!',
+    '🌟 Mười điểm không có nhưng! Bột học siêu nhanh luôn!',
+    '💞 Đúng luôn nè! Bột vừa xinh vừa giỏi ai chịu nổi đâyyy!',
+    '🎉 Quá xuất sắc! Kiến thức vào đầu Bột vèo vèo luôn!',
+    '💖 Chuẩn đét! Cố lên cục cưng ơi, sắp bá đạo môn này rồi!'
+  ];
+
+  const COMFORT_MESSAGES = [
+    '🥺 Sai xíu xiu thôi nè, không sao đâu Bột iuu! Đáp án đúng là {ANS} nha 💕',
+    '🌸 Nhầm chút xíu thôi mà, đọc lại 1 lần là Bột nhớ ngay! Đáp án là {ANS} nhé!',
+    '💗 Đừng buồn nha em bé ơi, sai ở đây để đi thi không sai nè! Chọn {ANS} mới đúng nha!',
+    '🤗 Ôm Bột cái nè! Câu này hơi lừa xíu thôi, đáp án đúng là {ANS} nha!',
+    '✨ Không sao hết trơn! Mỗi lần sai là một lần nhớ lâu hơn — đáp án là {ANS} nè 💖',
+    '💕 Cố lên Bột iuu, câu này hơi khó chút! Nhớ nhẹ đáp án {ANS} cho lần sau nha!',
+    '🌷 Thương thương, bình tĩnh đọc kỹ lại nè Bột ơi! Đáp án chuẩn là {ANS} nhé!',
+    '🥰 Sai 1 câu vẫn đáng yêu 100 điểm! Ghi nhớ đáp án {ANS} cùng anh nha!',
+    '🎀 Suýt đúng rồi nè cục cưng! Chốt lại đáp án {ANS} là thuộc lòng luôn!',
+    '💞 Không áp lực nha Bột ơi, anh luôn ở đây cổ vũ em! Câu này chọn {ANS} nhé!',
+    '🍓 Lỡ trượt tay xíu thôi đúng hông nè? Đáp án đúng là {ANS} nha Bột iuu!',
+    '💖 Bình tĩnh tự tin nha em yêu, ôn thêm lượt nữa là nhớ ngay đáp án {ANS} thôi!'
+  ];
+
+  const FC_MASTERED_TOASTS = [
+    '💖 Giỏi quá Bột ơi! Đã thuộc thêm Câu {ID} rồi nè!',
+    '🌸 Tuyệt vời! Câu {ID} nằm gọn trong đầu Bột rồi!',
+    '🥰 Siêu đỉnh! Cứ thế này là Bột quét sạch đề thi luôn! (Câu {ID})',
+    '✨ Xuất sắc! Anh tự hào về Bột quá đi! (✓ Câu {ID})'
+  ];
+
+  const FC_LEARNING_TOASTS = [
+    '🤗 Không sao nha Bột iuu, lưu Câu {ID} tí mình ôn lại là thuộc ngay!',
+    '💗 Từ từ thôi nè, Câu {ID} hơi dài xíu, lát gặp lại là nhớ liền!',
+    '🌷 Cố lên cục cưng! Đã cất Câu {ID} vào mục Bột cần ôn nha!'
+  ];
+
+  let lastPraiseIdx = -1;
+  let lastComfortIdx = -1;
+  function pickRandomMsg(list, isPraise) {
+    let idx = Math.floor(Math.random() * list.length);
+    const prev = isPraise ? lastPraiseIdx : lastComfortIdx;
+    if (list.length > 1 && idx === prev) idx = (idx + 1) % list.length;
+    if (isPraise) lastPraiseIdx = idx;
+    else lastComfortIdx = idx;
+    return list[idx];
   }
 
   function isFav(qid) {
@@ -485,7 +539,9 @@
     const qid = fcDeck[fcIdx];
     state.progress[qid] = status;
     saveState();
-    showToast(status === 'mastered' ? `✓ Đã đánh dấu thuộc Câu ${qid}!` : `🔁 Đã đưa Câu ${qid} vào Cần ôn lại`);
+    const pool = status === 'mastered' ? FC_MASTERED_TOASTS : FC_LEARNING_TOASTS;
+    const msg = pool[Math.floor(Math.random() * pool.length)].replace('{ID}', qid);
+    showToast(msg);
     if (fcIdx < fcDeck.length - 1) {
       fcIdx++;
       renderFlashcard();
@@ -625,8 +681,8 @@
       .map((opt, i) => (q.answer.includes(opt.key) ? (displayLetters[i] || opt.key) : null))
       .filter(Boolean);
     $('learnFeedbackTitle').textContent = isRight
-      ? '💖 Chính xác tuyệt đối! Bột đỉnh quá!'
-      : `❌ Chưa đúng rồi! Đáp án đúng là: ${shownCorrectLetters.join(', ')}`;
+      ? pickRandomMsg(PRAISE_MESSAGES, true)
+      : pickRandomMsg(COMFORT_MESSAGES, false).replace('{ANS}', shownCorrectLetters.join(', '));
 
     const noteEl = $('learnFeedbackNote');
     if (q.note) {
@@ -885,10 +941,10 @@
     $('resWrong').textContent = wrong;
     $('resDuration').textContent = formatDuration(attempt.durationSec);
 
-    let msg = 'Cố lên Bột ơi, ôn thêm chút nữa là lên 9–10 ngay! 💪';
-    if (attempt.scoreTen >= 9) msg = 'Xuất sắc quá Bột ơiii! Chuẩn bị đi nhận A+ thôi! 🏆💖';
-    else if (attempt.scoreTen >= 8) msg = 'Giỏi quá trời luôn! Xem lại vài câu sai là hoàn hảo! 🌸';
-    else if (attempt.scoreTen >= 6.5) msg = 'Khá ổn rồi nè! Tập trung ôn các câu sai bên dưới nhé! ✨';
+    let msg = '🤗 Không sao đâu Bột iuu ơi, mới nháp thôi mà! Ôn lại mấy câu sai bên dưới cùng anh là lên 9–10 vèo vèo ngay! 💖';
+    if (attempt.scoreTen >= 9) msg = '🏆 Đỉnh quá Bột của anh ơiii! Xuất sắc 100 điểm, đi thi chắc chắn ẵm trọn điểm cao nhất luôn! 💖🥰';
+    else if (attempt.scoreTen >= 8) msg = '🌸 Giỏi quá trời giỏi luôn em bé ơi! Chỉ cần xem nhẹ vài câu nhầm bên dưới nữa là hoàn hảo tuyệt đối! 💕';
+    else if (attempt.scoreTen >= 6.5) msg = '✨ Làm tốt lắm rồi nè Bột iuu! Cố thêm một xíu ở các câu sai bên dưới nữa là bứt phá ngay nha! 💗';
 
     $('resTitle').textContent = `${attempt.sourceLabel} — ${attempt.correct}/${attempt.total} câu đúng`;
     $('resSubtitle').textContent = `${msg} • Làm lúc ${formatDateTime(attempt.finishedAt)}`;
