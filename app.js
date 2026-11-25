@@ -1840,11 +1840,50 @@
     });
   }
 
+  // ==================== SWEET LOVE TICKER ====================
+  function startLoveTicker() {
+    const ticker = $('loveTicker');
+    const item = $('loveTickerItem');
+    if (!ticker || !item) return;
+
+    const messages = [
+      '💖 Anhh yêuu emm nhiềuu 💕',
+      '🌸 Anh yêu emm nhất 💗',
+      '✨ Anhh yêu emm mãi mãi 💖'
+    ];
+    let lastIdx = -1;
+
+    const triggerOnce = () => {
+      let idx = Math.floor(Math.random() * messages.length);
+      if (messages.length > 1 && idx === lastIdx && Math.random() < 0.7) {
+        idx = (idx + 1) % messages.length;
+      }
+      lastIdx = idx;
+      item.textContent = messages[idx];
+
+      // Restart CSS animation cleanly
+      ticker.classList.remove('is-running');
+      void item.offsetWidth;
+      ticker.classList.add('is-running');
+
+      // Hide after glide completes (~10.5s), then wait random 20–40s for next message
+      setTimeout(() => {
+        ticker.classList.remove('is-running');
+        const nextDelay = 20000 + Math.floor(Math.random() * 20000);
+        setTimeout(triggerOnce, nextDelay);
+      }, 10600);
+    };
+
+    // First gentle appearance ~2.5s after page load
+    setTimeout(triggerOnce, 2500);
+  }
+
   // ==================== INIT ====================
   function init() {
     updateHeaderStats();
     bindEvents();
     rebuildFlashcardDeck(false);
+    startLoveTicker();
   }
 
   if (document.readyState === 'loading') {

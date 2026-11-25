@@ -14,7 +14,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Quicksand:wght@600;700&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=9" />
+  <link rel="stylesheet" href="styles.css?v=10" />
 </head>
 
 <body>
@@ -76,12 +76,17 @@
         </button>
       </div>
     </nav>
-  </header>
 
-  <!-- Global Progress Ribbon -->
-  <div class="progress-ribbon" title="Tổng tiến trình ôn tập">
-    <div class="progress-ribbon-fill" id="globalProgressFill" style="width: 0%"></div>
-  </div>
+    <!-- Global Progress Ribbon -->
+    <div class="progress-ribbon" title="Tổng tiến trình ôn tập">
+      <div class="progress-ribbon-fill" id="globalProgressFill" style="width: 0%"></div>
+    </div>
+
+    <!-- Occasional Sweet Random Ticker Under Header -->
+    <div class="love-ticker" id="loveTicker" aria-hidden="true">
+      <span class="love-ticker-item" id="loveTickerItem"></span>
+    </div>
+  </header>
 
   <!-- Main Workspace -->
   <main class="container">
@@ -634,8 +639,8 @@
   <!-- Toast Container -->
   <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
-  <script src="data.js?v=9"></script>
-  <script src="app.js?v=9"></script>
+  <script src="data.js?v=10"></script>
+  <script src="app.js?v=10"></script>
 </body>
 
 </html>
