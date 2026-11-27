@@ -60,14 +60,20 @@
   }
 
   let state = loadState();
+  let applyingRemoteState = false;
+  let cloudPushTimer = null;
 
-  function saveState() {
+  function saveState(skipCloud = false) {
+    state.updatedAt = Date.now();
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (e) {
       console.warn('Could not save state to localStorage:', e);
     }
     updateHeaderStats();
+    if (!skipCloud && !applyingRemoteState) {
+      scheduleCloudPush();
+    }
   }
 
   // ==================== RUNTIME UI STATE ====================
@@ -528,7 +534,7 @@
     $('fcPrevBtn').disabled = fcIdx === 0;
     $('fcNextBtn').disabled = fcIdx === fcDeck.length - 1;
 
-    if (!fcCustomSet && state.prefs.fcFilter === 'all') {
+    if (!fcCustomSet && state.prefs.fcFilter === 'all' && state.prefs.fcIndex !== fcIdx) {
       state.prefs.fcIndex = fcIdx;
       saveState();
     }
@@ -1894,6 +1900,385 @@
         $('settingsModal').classList.add('hidden');
       }
     });
+
+    // Cloud Sync Events
+    on('syncConnectBtn', 'click', () => {
+      const code = ($('syncCodeInput')?.value || '').trim();
+      if (!code) {
+        showToast('⚠️ Hãy nhập mã đồng bộ trước nhé (VD: botiuu)!');
+        return;
+      }
+      connectSyncRoom(code, true);
+    });
+    on('syncCodeInput', 'keydown', (e) => {
+      if (e.key === 'Enter') {
+        const code = ($('syncCodeInput')?.value || '').trim();
+        if (code) connectSyncRoom(code, true);
+      }
+    });
+    on('syncForcePushBtn', 'click', () => pushStateToCloudNow(true));
+    on('syncForcePullBtn', 'click', () => pullStateFromCloudNow(true));
+    on('syncDisconnectBtn', 'click', () => disconnectSyncRoom(true));
+  }
+
+  // ==================== FIREBASE CLOUD SYNC ====================
+  const SYNC_CODE_KEY = 'vnr202_bot_sync_code';
+  const CLIENT_ID = 'cli_' + Math.random().toString(36).slice(2, 10) + '_' + Date.now().toString(36);
+  const FIREBASE_CONFIG = {
+    apiKey: 'AIzaSyBtOTbqLXGHvoXetLwzVIMmqcEr3XP5PNM',
+    authDomain: 'prmde180497.firebaseapp.com',
+    databaseURL: 'https://prmde180497-default-rtdb.firebaseio.com',
+    projectId: 'prmde180497',
+    storageBucket: 'prmde180497.firebasestorage.app',
+    messagingSenderId: '455461470715',
+    appId: '1:455461470715:web:5d6f21685f440277d9cb5e',
+    measurementId: 'G-TRPM3JGXNK'
+  };
+
+  let fbDb = null;
+  let activeRoomRef = null;
+  let activeSyncCode = '';
+  let lastSyncedAt = 0;
+
+  function initFirebaseApp() {
+    if (fbDb) return fbDb;
+    if (typeof window.firebase === 'undefined' || !window.firebase.initializeApp) {
+      return null;
+    }
+    try {
+      const app = window.firebase.apps && window.firebase.apps.length
+        ? window.firebase.app()
+        : window.firebase.initializeApp(FIREBASE_CONFIG);
+      fbDb = app.database();
+      return fbDb;
+    } catch (err) {
+      console.warn('Firebase init error:', err);
+      return null;
+    }
+  }
+
+  function toRoomKey(rawCode) {
+    return normalizeVN(rawCode)
+      .trim()
+      .replace(/[^a-z0-9_-]/g, '_')
+      .replace(/_+/g, '_')
+      .slice(0, 48);
+  }
+
+  function updateSyncStatusUI(status, message) {
+    const dot = $('hdrSyncDot');
+    const badge = $('syncStatusBadge');
+    const timeEl = $('syncLastTime');
+    const actions = $('syncConnectedActions');
+    const connectBtn = $('syncConnectBtn');
+    const input = $('syncCodeInput');
+
+    if (dot) {
+      dot.className = 'sync-dot';
+      if (status === 'online') dot.classList.add('is-online');
+      else if (status === 'syncing') dot.classList.add('is-syncing');
+      else if (status === 'error') dot.classList.add('is-error');
+    }
+    if (badge) {
+      badge.className = 'sync-badge' + (status === 'online' ? ' is-online' : '');
+      badge.textContent = message;
+    }
+    if (timeEl) {
+      timeEl.textContent = lastSyncedAt ? `Cập nhật: ${new Date(lastSyncedAt).toLocaleTimeString('vi-VN')}` : '';
+    }
+    if (actions) {
+      actions.classList.toggle('hidden', !activeSyncCode);
+    }
+    if (connectBtn) {
+      connectBtn.textContent = activeSyncCode ? '🔄 Đổi mã' : '🔗 Kết nối';
+    }
+    if (input && activeSyncCode && document.activeElement !== input) {
+      input.value = activeSyncCode;
+    }
+  }
+
+  function toCleanMap(val) {
+    const out = {};
+    if (!val || typeof val !== 'object') return out;
+    Object.entries(val).forEach(([k, v]) => {
+      if (v !== null && v !== undefined && v !== false) {
+        out[String(k)] = v;
+      }
+    });
+    return out;
+  }
+
+  function normalizeCloudState(raw) {
+    const base = defaultState();
+    if (!raw || typeof raw !== 'object') return base;
+
+    const rawHistory = Array.isArray(raw.examHistory)
+      ? raw.examHistory
+      : Object.values(raw.examHistory || {}).filter(Boolean);
+    const examHistory = rawHistory
+      .filter((a) => a && a.id)
+      .map((a) => {
+        const rawItems = Array.isArray(a.items) ? a.items : Object.values(a.items || {}).filter(Boolean);
+        return {
+          ...a,
+          items: rawItems.map((it) => ({
+            ...it,
+            chosen: (Array.isArray(it.chosen) ? it.chosen : Object.values(it.chosen || {})).filter(Boolean),
+            correct: (Array.isArray(it.correct) ? it.correct : Object.values(it.correct || {})).filter(Boolean)
+          }))
+        };
+      });
+
+    let activeExam = null;
+    if (raw.activeExam && raw.activeExam.id) {
+      const ex = raw.activeExam;
+      const qs = (Array.isArray(ex.questions) ? ex.questions : Object.values(ex.questions || {})).filter(Boolean);
+      const normAnswers = {};
+      Object.entries(toCleanMap(ex.answers)).forEach(([k, v]) => {
+        normAnswers[k] = (Array.isArray(v) ? v : Object.values(v || {})).filter(Boolean);
+      });
+      activeExam = {
+        ...ex,
+        questions: qs.map((q) => ({
+          ...q,
+          optOrder: (Array.isArray(q.optOrder) ? q.optOrder : Object.values(q.optOrder || {})).filter(Boolean)
+        })),
+        answers: normAnswers,
+        flags: toCleanMap(ex.flags)
+      };
+    }
+
+    return {
+      ...base,
+      progress: toCleanMap(raw.progress),
+      favorites: toCleanMap(raw.favorites),
+      stats: toCleanMap(raw.stats),
+      examHistory,
+      activeExam,
+      updatedAt: raw.updatedAt || 0,
+      prefs: { ...base.prefs, ...(raw.prefs || {}) }
+    };
+  }
+
+  function mergeStatesOnConnect(localS, cloudS) {
+    const c = normalizeCloudState(cloudS);
+    const l = normalizeCloudState(localS);
+    const cloudNewer = (c.updatedAt || 0) >= (l.updatedAt || 0);
+
+    // Merge progress (mastered > learning)
+    const progress = { ...c.progress, ...l.progress };
+    Object.keys(progress).forEach((qid) => {
+      if (c.progress[qid] === 'mastered' || l.progress[qid] === 'mastered') {
+        progress[qid] = 'mastered';
+      }
+    });
+
+    // Union favorites on initial merge
+    const favorites = { ...c.favorites, ...l.favorites };
+
+    // Merge per-question stats (take max counts so neither device loses stats)
+    const stats = { ...c.stats };
+    Object.entries(l.stats || {}).forEach(([qid, ls]) => {
+      const cs = stats[qid];
+      if (!cs) {
+        stats[qid] = { ...ls };
+      } else {
+        const lNewer = (ls.lastAt || 0) >= (cs.lastAt || 0);
+        stats[qid] = {
+          right: Math.max(cs.right || 0, ls.right || 0),
+          wrong: Math.max(cs.wrong || 0, ls.wrong || 0),
+          lastResult: lNewer ? ls.lastResult : cs.lastResult,
+          lastAt: Math.max(cs.lastAt || 0, ls.lastAt || 0)
+        };
+      }
+    });
+
+    // Deduplicate examHistory by attempt id, newest first
+    const histMap = new Map();
+    [...(c.examHistory || []), ...(l.examHistory || [])].forEach((att) => {
+      if (att && att.id && !histMap.has(att.id)) histMap.set(att.id, att);
+    });
+    const examHistory = [...histMap.values()].sort((a, b) => (b.finishedAt || 0) - (a.finishedAt || 0));
+
+    return {
+      progress,
+      favorites,
+      stats,
+      examHistory,
+      activeExam: cloudNewer ? (c.activeExam || l.activeExam) : (l.activeExam || c.activeExam),
+      prefs: cloudNewer ? { ...l.prefs, ...c.prefs } : { ...c.prefs, ...l.prefs },
+      updatedAt: Date.now()
+    };
+  }
+
+  function refreshAllViewsAfterSync() {
+    updateHeaderStats();
+    rebuildFlashcardDeck(true);
+    if (currentTab === 'learn') {
+      buildLearnDeck();
+    } else if (currentTab === 'exam') {
+      renderExamTabState();
+    } else if (currentTab === 'tips') {
+      renderTips();
+    } else if (currentTab === 'history') {
+      renderHistoryTab();
+    } else if (currentTab === 'bank') {
+      renderBank(false);
+    }
+  }
+
+  function scheduleCloudPush() {
+    if (!activeRoomRef || !activeSyncCode) return;
+    clearTimeout(cloudPushTimer);
+    updateSyncStatusUI('syncing', `🔄 Đang lưu mã: ${activeSyncCode}...`);
+    cloudPushTimer = setTimeout(() => {
+      pushStateToCloudNow(false);
+    }, 350);
+  }
+
+  function pushStateToCloudNow(manualToast = false) {
+    if (!activeRoomRef || !activeSyncCode) return;
+    const now = Date.now();
+    state.updatedAt = now;
+    updateSyncStatusUI('syncing', `🔄 Đang đồng bộ mã: ${activeSyncCode}...`);
+    activeRoomRef
+      .set({
+        updatedAt: now,
+        updatedBy: CLIENT_ID,
+        state
+      })
+      .then(() => {
+        lastSyncedAt = now;
+        updateSyncStatusUI('online', `🟢 Đang đồng bộ mã: ${activeSyncCode}`);
+        if (manualToast) showToast(`☁️ Đã đẩy dữ liệu lên mã "${activeSyncCode}"!`);
+      })
+      .catch((err) => {
+        console.warn('Cloud push failed:', err);
+        updateSyncStatusUI('error', `🔴 Lỗi đồng bộ (${activeSyncCode})`);
+        if (manualToast) showToast('❌ Không thể đẩy lên đám mây — kiểm tra mạng hoặc quyền Firebase!');
+      });
+  }
+
+  function pullStateFromCloudNow(manualToast = false) {
+    if (!activeRoomRef || !activeSyncCode) return;
+    updateSyncStatusUI('syncing', `🔄 Đang tải từ mã: ${activeSyncCode}...`);
+    activeRoomRef
+      .once('value')
+      .then((snap) => {
+        const val = snap.val();
+        if (val && val.state) {
+          applyingRemoteState = true;
+          state = normalizeCloudState(val.state);
+          saveState(true);
+          applyingRemoteState = false;
+          lastSyncedAt = val.updatedAt || Date.now();
+          refreshAllViewsAfterSync();
+          updateSyncStatusUI('online', `🟢 Đang đồng bộ mã: ${activeSyncCode}`);
+          if (manualToast) showToast(`⬇️ Đã tải tiến trình mới nhất từ mã "${activeSyncCode}"!`);
+        } else {
+          pushStateToCloudNow(false);
+          if (manualToast) showToast(`☁️ Mã "${activeSyncCode}" chưa có dữ liệu, đã khởi tạo từ máy này!`);
+        }
+      })
+      .catch((err) => {
+        console.warn('Cloud pull failed:', err);
+        updateSyncStatusUI('error', `🔴 Lỗi kết nối (${activeSyncCode})`);
+      });
+  }
+
+  function connectSyncRoom(rawCode, showSuccessToast = false) {
+    const db = initFirebaseApp();
+    if (!db) {
+      updateSyncStatusUI('error', '🔴 Không tải được Firebase SDK');
+      if (showSuccessToast) showToast('❌ Chưa tải được Firebase (kiểm tra kết nối mạng)!');
+      return;
+    }
+
+    const roomKey = toRoomKey(rawCode);
+    if (!roomKey) {
+      if (showSuccessToast) showToast('⚠️ Mã đồng bộ không hợp lệ!');
+      return;
+    }
+
+    if (activeRoomRef) {
+      activeRoomRef.off();
+      activeRoomRef = null;
+    }
+
+    activeSyncCode = rawCode.trim();
+    try {
+      localStorage.setItem(SYNC_CODE_KEY, activeSyncCode);
+    } catch (e) {}
+
+    const ref = db.ref(`vnr202_rooms/${roomKey}`);
+    activeRoomRef = ref;
+    updateSyncStatusUI('syncing', `🔄 Đang kết nối mã: ${activeSyncCode}...`);
+
+    // Initial smart-merge so connecting a new device never wipes cloud progress
+    ref
+      .once('value')
+      .then((snap) => {
+        const val = snap.val();
+        applyingRemoteState = true;
+        if (val && val.state) {
+          state = mergeStatesOnConnect(state, val.state);
+          saveState(true);
+        }
+        applyingRemoteState = false;
+        refreshAllViewsAfterSync();
+        pushStateToCloudNow(false);
+
+        if (showSuccessToast) {
+          showToast(`☁️ Đã kết nối đồng bộ mã "${activeSyncCode}" thành công!`);
+        }
+
+        // Attach real-time listener for updates from other browsers/devices
+        ref.on('value', (liveSnap) => {
+          const payload = liveSnap.val();
+          if (!payload || !payload.state) return;
+          if (payload.updatedBy === CLIENT_ID) return;
+
+          applyingRemoteState = true;
+          state = normalizeCloudState(payload.state);
+          saveState(true);
+          applyingRemoteState = false;
+          lastSyncedAt = payload.updatedAt || Date.now();
+          updateSyncStatusUI('online', `🟢 Đang đồng bộ mã: ${activeSyncCode}`);
+          refreshAllViewsAfterSync();
+        });
+      })
+      .catch((err) => {
+        console.warn('Connect sync error:', err);
+        updateSyncStatusUI('error', `🔴 Lỗi kết nối (${activeSyncCode})`);
+        if (showSuccessToast) showToast('❌ Kết nối Firebase thất bại — kiểm tra mạng nhé!');
+      });
+  }
+
+  function disconnectSyncRoom(notify = false) {
+    if (activeRoomRef) {
+      activeRoomRef.off();
+      activeRoomRef = null;
+    }
+    activeSyncCode = '';
+    lastSyncedAt = 0;
+    try {
+      localStorage.removeItem(SYNC_CODE_KEY);
+    } catch (e) {}
+    if ($('syncCodeInput')) $('syncCodeInput').value = '';
+    updateSyncStatusUI('offline', '⚪ Chưa kết nối mã đồng bộ');
+    if (notify) showToast('Đã ngắt kết nối mã đồng bộ trên trình duyệt này.');
+  }
+
+  function autoReconnectSyncOnBoot() {
+    let savedCode = '';
+    try {
+      savedCode = localStorage.getItem(SYNC_CODE_KEY) || '';
+    } catch (e) {}
+    if (savedCode.trim()) {
+      connectSyncRoom(savedCode.trim(), false);
+    } else {
+      updateSyncStatusUI('offline', '⚪ Chưa kết nối mã đồng bộ');
+    }
   }
 
   // ==================== SWEET LOVE TICKER ====================
@@ -1940,6 +2325,7 @@
     bindEvents();
     rebuildFlashcardDeck(false);
     startLoveTicker();
+    autoReconnectSyncOnBoot();
   }
 
   if (document.readyState === 'loading') {
