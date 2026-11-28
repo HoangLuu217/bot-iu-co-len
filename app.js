@@ -1436,6 +1436,82 @@
       switchTab('bank');
     });
 
+    // Fullscreen toggle (Native Fullscreen API + graceful fallback for iOS Safari)
+    const getNativeFsEl = () =>
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.msFullscreenElement ||
+      null;
+
+    const updateFullscreenUI = () => {
+      const active = !!getNativeFsEl() || document.body.classList.contains('is-focus-fullscreen');
+      document.body.classList.toggle('is-fullscreen', active);
+      const btn = $('fullscreenBtn');
+      if (btn) {
+        btn.classList.toggle('is-fs-active', active);
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        btn.title = active ? 'Thoát toàn màn hình (Phím F / Esc)' : 'Mở toàn màn hình (Phím F)';
+      }
+      if ($('fsIconExpand')) $('fsIconExpand').classList.toggle('hidden', active);
+      if ($('fsIconCollapse')) $('fsIconCollapse').classList.toggle('hidden', !active);
+    };
+
+    const toggleFullscreen = () => {
+      const nativeEl = getNativeFsEl();
+      const docEl = document.documentElement;
+      const reqFs = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
+      const exitFs = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+
+      if (nativeEl) {
+        if (exitFs) {
+          Promise.resolve(exitFs.call(document)).catch(() => {});
+        }
+        document.body.classList.remove('is-focus-fullscreen');
+        updateFullscreenUI();
+        return;
+      }
+
+      if (document.body.classList.contains('is-focus-fullscreen')) {
+        document.body.classList.remove('is-focus-fullscreen');
+        updateFullscreenUI();
+        return;
+      }
+
+      if (reqFs) {
+        try {
+          const p = reqFs.call(docEl);
+          if (p && typeof p.catch === 'function') {
+            p.catch(() => {
+              // Fallback if browser blocks fullscreen (e.g. iOS Safari)
+              document.body.classList.add('is-focus-fullscreen');
+              updateFullscreenUI();
+              showToast('⛶ Đã bật chế độ tập trung toàn màn hình!');
+            });
+          }
+        } catch (err) {
+          document.body.classList.add('is-focus-fullscreen');
+          updateFullscreenUI();
+          showToast('⛶ Đã bật chế độ tập trung toàn màn hình!');
+        }
+      } else {
+        document.body.classList.add('is-focus-fullscreen');
+        updateFullscreenUI();
+        showToast('⛶ Đã bật chế độ tập trung toàn màn hình!');
+      }
+    };
+
+    on('fullscreenBtn', 'click', toggleFullscreen);
+    document.addEventListener('fullscreenchange', updateFullscreenUI);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenUI);
+    document.addEventListener('keydown', (e) => {
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+      if (!$('questionModal').classList.contains('hidden') || !$('settingsModal').classList.contains('hidden')) return;
+      if (e.key.toLowerCase() === 'f' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        toggleFullscreen();
+      }
+    });
+
     // Global delegated heart toggle in lists (bank / review / stats)
     document.addEventListener('click', (e) => {
       const hBtn = e.target.closest('[data-heart-qid]');

@@ -230,6 +230,29 @@ mark.kw-hl {
   border-color: var(--pink-400);
 }
 
+.btn-icon-ghost.is-fs-active {
+  background: var(--pink-50);
+  border-color: var(--pink-500);
+  color: var(--pink-600);
+}
+
+/* Focus / Fullscreen mode enhancements */
+body.is-fullscreen .container {
+  max-width: 1520px;
+}
+
+body.is-focus-fullscreen .site-footer {
+  display: none;
+}
+
+body.is-focus-fullscreen .brand-sub {
+  display: none;
+}
+
+body.is-focus-fullscreen .container {
+  padding-top: 14px;
+}
+
 .sync-dot {
   position: absolute;
   top: 2px;
@@ -2473,9 +2496,13 @@ kbd {
     white-space: nowrap;
   }
   .btn-icon-ghost {
-    width: 30px;
-    height: 30px;
-    font-size: 0.88rem;
+    width: 28px;
+    height: 28px;
+    font-size: 0.84rem;
+  }
+  .btn-icon-ghost svg {
+    width: 14px;
+    height: 14px;
   }
   .nav-inner {
     padding: 5px 10px;
