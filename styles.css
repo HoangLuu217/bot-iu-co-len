@@ -241,16 +241,36 @@ body.is-fullscreen .container {
   max-width: 1520px;
 }
 
+body.is-focus-fullscreen .site-header,
 body.is-focus-fullscreen .site-footer {
   display: none;
 }
 
-body.is-focus-fullscreen .brand-sub {
-  display: none;
+body.is-focus-fullscreen .container {
+  max-width: 100%;
+  padding-top: 52px;
 }
 
-body.is-focus-fullscreen .container {
-  padding-top: 14px;
+.exit-focus-fs-btn {
+  position: fixed;
+  top: 10px;
+  right: 12px;
+  z-index: 95;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--pink-400);
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--pink-700);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+}
+
+.exit-focus-fs-btn:hover {
+  background: var(--pink-600);
+  border-color: var(--pink-600);
+  color: #ffffff;
 }
 
 .sync-dot {

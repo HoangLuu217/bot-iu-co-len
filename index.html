@@ -4,6 +4,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#ffffff" />
   <title>Bột iuu thi tốt — Ôn thi VNR202</title>
   <link rel="icon" type="image/png" href="logo-hd.png" />
   <link rel="apple-touch-icon" href="logo-hd.png" />
@@ -14,7 +17,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Quicksand:wght@600;700&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=13" />
+  <link rel="stylesheet" href="styles.css?v=14" />
 </head>
 
 <body>
@@ -686,15 +689,20 @@
     </div>
   </div>
 
+  <!-- Floating Exit Fullscreen Pill (for focus-fullscreen / mobile) -->
+  <button type="button" id="exitFocusFsBtn" class="exit-focus-fs-btn hidden" aria-label="Thoát toàn màn hình">
+    ✕ Thoát toàn màn hình
+  </button>
+
   <!-- Toast Container -->
   <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
   <!-- Firebase Realtime Database SDK (Compat for universal browser & file:// support) -->
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
-  <script src="data.js?v=13"></script>
-  <script src="pmg201_data.js?v=13"></script>
-  <script src="app.js?v=13"></script>
+  <script src="data.js?v=14"></script>
+  <script src="pmg201_data.js?v=14"></script>
+  <script src="app.js?v=14"></script>
 </body>
 
 </html>

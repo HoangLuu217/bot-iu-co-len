@@ -1444,7 +1444,8 @@
       null;
 
     const updateFullscreenUI = () => {
-      const active = !!getNativeFsEl() || document.body.classList.contains('is-focus-fullscreen');
+      const isFocus = document.body.classList.contains('is-focus-fullscreen');
+      const active = !!getNativeFsEl() || isFocus;
       document.body.classList.toggle('is-fullscreen', active);
       const btn = $('fullscreenBtn');
       if (btn) {
@@ -1454,6 +1455,13 @@
       }
       if ($('fsIconExpand')) $('fsIconExpand').classList.toggle('hidden', active);
       if ($('fsIconCollapse')) $('fsIconCollapse').classList.toggle('hidden', !active);
+      if ($('exitFocusFsBtn')) $('exitFocusFsBtn').classList.toggle('hidden', !isFocus);
+    };
+
+    const enterFocusFallback = () => {
+      document.body.classList.add('is-focus-fullscreen');
+      updateFullscreenUI();
+      showToast('⛶ Đã bật chế độ toàn màn hình tập trung!');
     };
 
     const toggleFullscreen = () => {
@@ -1480,27 +1488,24 @@
       if (reqFs) {
         try {
           const p = reqFs.call(docEl);
-          if (p && typeof p.catch === 'function') {
-            p.catch(() => {
-              // Fallback if browser blocks fullscreen (e.g. iOS Safari)
-              document.body.classList.add('is-focus-fullscreen');
-              updateFullscreenUI();
-              showToast('⛶ Đã bật chế độ tập trung toàn màn hình!');
-            });
+          if (p && typeof p.then === 'function') {
+            p.then(() => updateFullscreenUI()).catch(() => enterFocusFallback());
+          } else {
+            setTimeout(() => {
+              if (!getNativeFsEl()) enterFocusFallback();
+              else updateFullscreenUI();
+            }, 150);
           }
         } catch (err) {
-          document.body.classList.add('is-focus-fullscreen');
-          updateFullscreenUI();
-          showToast('⛶ Đã bật chế độ tập trung toàn màn hình!');
+          enterFocusFallback();
         }
       } else {
-        document.body.classList.add('is-focus-fullscreen');
-        updateFullscreenUI();
-        showToast('⛶ Đã bật chế độ tập trung toàn màn hình!');
+        enterFocusFallback();
       }
     };
 
     on('fullscreenBtn', 'click', toggleFullscreen);
+    on('exitFocusFsBtn', 'click', toggleFullscreen);
     document.addEventListener('fullscreenchange', updateFullscreenUI);
     document.addEventListener('webkitfullscreenchange', updateFullscreenUI);
     document.addEventListener('keydown', (e) => {
@@ -1509,6 +1514,9 @@
       if (e.key.toLowerCase() === 'f' && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
         toggleFullscreen();
+      } else if (e.key === 'Escape' && document.body.classList.contains('is-focus-fullscreen')) {
+        document.body.classList.remove('is-focus-fullscreen');
+        updateFullscreenUI();
       }
     });
 
