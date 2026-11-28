@@ -14,7 +14,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Quicksand:wght@600;700&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=12" />
+  <link rel="stylesheet" href="styles.css?v=13" />
 </head>
 
 <body>
@@ -27,7 +27,7 @@
         </span>
         <div class="brand-text">
           <h1 class="brand-title">Bột iuu thi tốt</h1>
-          <p class="brand-sub">Ôn thi VNR202 • 415 câu</p>
+          <p class="brand-sub" id="brandSub">Ôn thi VNR202 • 415 câu</p>
         </div>
       </div>
 
@@ -48,6 +48,23 @@
       </div>
     </div>
 
+    <!-- Subject Switcher Bar -->
+    <div class="subject-bar" role="tablist" aria-label="Chọn môn học">
+      <div class="subject-bar-inner">
+        <span class="subject-bar-label">📚 Môn học:</span>
+        <div class="subject-tabs" id="subjectTabs">
+          <button type="button" class="subject-tab active" data-subject="vnr202" role="tab" aria-selected="true">
+            <span>🇻🇳 VNR202</span>
+            <span class="subj-count">415</span>
+          </button>
+          <button type="button" class="subject-tab" data-subject="pmg201" role="tab" aria-selected="false">
+            <span>📊 PMG201</span>
+            <span class="subj-count">336</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Navigation Tabs -->
     <nav class="main-nav" aria-label="Chế độ học">
       <div class="nav-inner">
@@ -63,7 +80,7 @@
           <span class="nav-ic">📝</span>
           <span>Thi thử 60 câu</span>
         </button>
-        <button class="nav-tab" data-tab="tips">
+        <button class="nav-tab" data-tab="tips" id="navTipsTab">
           <span class="nav-ic">✨</span>
           <span>Mẹo học</span>
         </button>
@@ -128,7 +145,7 @@
       <div id="fcEmptyState" class="empty-state hidden">
         <div class="empty-emoji">🌸</div>
         <h3>Không có thẻ nào trong bộ lọc này!</h3>
-        <p>Bột hãy chọn bộ lọc khác hoặc quay lại tất cả 415 câu nhé.</p>
+        <p id="fcEmptyDesc">Bột hãy chọn bộ lọc khác hoặc quay lại tất cả 415 câu nhé.</p>
         <button class="btn btn-primary" id="fcBackAllBtn">Xem tất cả 415 câu</button>
       </div>
 
@@ -188,7 +205,7 @@
         </div>
 
         <!-- Right Sidebar: Study Tips for current Flashcard -->
-        <aside class="tips-aside" aria-label="Mẹo học áp dụng">
+        <aside class="tips-aside" id="fcTipsAside" aria-label="Mẹo học áp dụng">
           <div class="tips-aside-card">
             <div class="tips-aside-head">
               <h3>✨ Mẹo học câu này</h3>
@@ -205,14 +222,14 @@
       <div class="panel-toolbar">
         <select id="learnFilterSelect" class="mobile-filter-select" aria-label="Chọn chế độ học bài">
           <option value="smart">✨ Ưu tiên Bột chưa thuộc</option>
-          <option value="all">🌸 Tất cả (415)</option>
+          <option value="all" id="learnAllOpt">🌸 Tất cả (415)</option>
           <option value="favorite">❤️ Bột yêu thích</option>
           <option value="wrong">❌ Bột hay sai</option>
           <option value="learning">↺ Bột cần ôn</option>
         </select>
         <div class="filter-chips" id="learnFilters">
           <button class="chip active" data-filter="smart">Ưu tiên Bột chưa thuộc</button>
-          <button class="chip" data-filter="all">Tất cả (415)</button>
+          <button class="chip" data-filter="all" id="learnAllChip">Tất cả (415)</button>
           <button class="chip" data-filter="favorite">❤️ Bột yêu thích</button>
           <button class="chip" data-filter="wrong">❌ Bột hay sai</button>
           <button class="chip" data-filter="learning">↺ Bột cần ôn</button>
@@ -285,7 +302,7 @@
         </div>
 
         <!-- Right Sidebar: Study Tips for current Learn Question -->
-        <aside class="tips-aside" aria-label="Mẹo học áp dụng">
+        <aside class="tips-aside" id="learnTipsAside" aria-label="Mẹo học áp dụng">
           <div class="tips-aside-card">
             <div class="tips-aside-head">
               <h3>✨ Mẹo học câu này</h3>
@@ -302,7 +319,7 @@
       <!-- Setup View -->
       <div id="examSetupView" class="exam-setup-card">
         <div class="exam-hero">
-          <div class="exam-hero-badge">🎀 Giả lập đề thi VNR202</div>
+          <div class="exam-hero-badge" id="examHeroBadge">🎀 Giả lập đề thi VNR202</div>
           <h2>Tạo đề thi 60 câu ngẫu nhiên</h2>
           <p>Luyện phản xạ như thi thật, tự động lưu bài đang làm nếu lỡ tải lại trang, và lưu toàn bộ lịch sử đúng/sai
             vào máy của Bột.</p>
@@ -333,7 +350,7 @@
           <div class="setup-field">
             <label for="examSourceSelect">Nguồn chọn câu hỏi</label>
             <select id="examSourceSelect" class="select-input">
-              <option value="random" selected>Ngẫu nhiên toàn bộ 415 câu</option>
+              <option value="random" id="examRandomOpt" selected>Ngẫu nhiên toàn bộ 415 câu</option>
               <option value="weak">Ưu tiên câu hay sai &amp; chưa thuộc</option>
               <option value="favorite">Chỉ lấy từ câu đã thả tim ❤️</option>
               <option value="wrong">Chỉ lấy từ câu từng làm sai ❌</option>
@@ -560,7 +577,7 @@
             <option value="unseen">○ Bột chưa học</option>
           </select>
           <div class="filter-chips" id="bankFilterChips">
-            <button class="chip active" data-bfilter="all">Tất cả (415)</button>
+            <button class="chip active" data-bfilter="all" id="bankAllChip">Tất cả (415)</button>
             <button class="chip" data-bfilter="favorite">❤️ Bột đã thả tim (<span id="bankFavCount">0</span>)</button>
             <button class="chip" data-bfilter="mastered">✓ Bột đã thuộc</button>
             <button class="chip" data-bfilter="learning">↺ Bột cần ôn</button>
@@ -580,7 +597,7 @@
   </main>
 
   <footer class="site-footer">
-    <p>💖 Chúc <strong>Bột iuu thi tốt</strong> đạt điểm 10 môn VNR202! • Mọi tiến trình &amp; lịch sử được tự động lưu
+    <p>💖 Chúc <strong>Bột iuu thi tốt</strong> đạt điểm 10 môn VNR202 &amp; PMG201! • Mọi tiến trình &amp; lịch sử được tự động lưu
       trên trình duyệt của Bột.</p>
   </footer>
 
@@ -660,8 +677,9 @@
   <!-- Firebase Realtime Database SDK (Compat for universal browser & file:// support) -->
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
-  <script src="data.js?v=12"></script>
-  <script src="app.js?v=12"></script>
+  <script src="data.js?v=13"></script>
+  <script src="pmg201_data.js?v=13"></script>
+  <script src="app.js?v=13"></script>
 </body>
 
 </html>

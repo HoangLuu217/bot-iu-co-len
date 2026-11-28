@@ -253,6 +253,79 @@ mark.kw-hl {
   background: #ef4444;
 }
 
+/* Subject Switcher Bar */
+.subject-bar {
+  border-top: 1px solid var(--pink-50);
+  background: var(--bg-soft);
+}
+
+.subject-bar-inner {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 6px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.subject-bar-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.subject-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--pink-200);
+}
+
+.subject-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.16s ease;
+}
+
+.subject-tab:hover:not(.active) {
+  background: var(--pink-50);
+  color: var(--pink-600);
+}
+
+.subject-tab.active {
+  background: linear-gradient(135deg, var(--pink-500), var(--pink-600));
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(219, 39, 119, 0.22);
+}
+
+.subj-count {
+  font-size: 0.72rem;
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--pink-100);
+  color: var(--pink-700);
+  font-weight: 800;
+}
+
+.subject-tab.active .subj-count {
+  background: rgba(255, 255, 255, 0.24);
+  color: #ffffff;
+}
+
 /* Main Navigation */
 .main-nav {
   border-top: 1px solid var(--pink-50);
@@ -726,6 +799,12 @@ mark.kw-hl {
   align-items: start;
 }
 
+.study-split-layout.no-tips-aside {
+  grid-template-columns: 1fr;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
 .tips-aside-card {
   position: sticky;
   top: 126px;
@@ -903,6 +982,7 @@ mark.kw-hl {
   color: var(--text-strong);
   margin-bottom: 22px;
   line-height: 1.55;
+  white-space: pre-line;
 }
 
 .fc-options-preview {
@@ -2400,6 +2480,18 @@ kbd {
   .nav-inner {
     padding: 5px 10px;
     gap: 4px;
+  }
+  .subject-bar-inner {
+    padding: 5px 10px;
+    gap: 8px;
+    justify-content: space-between;
+  }
+  .subject-bar-label {
+    font-size: 0.76rem;
+  }
+  .subject-tab {
+    padding: 4px 10px;
+    font-size: 0.78rem;
   }
   .nav-tab {
     padding: 6px 11px;

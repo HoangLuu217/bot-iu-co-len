@@ -8,19 +8,59 @@
 (function () {
   'use strict';
 
-  const STORAGE_KEY = 'vnr202_bot_iuu_v1';
-  const { questions: QUESTIONS, tips: TIPS } = window.VNR_DATA;
+  // ==================== SUBJECT REGISTRY ====================
+  const ACTIVE_SUBJECT_KEY = 'vnr202_bot_active_subject';
+  const SUBJECTS = {
+    vnr202: {
+      id: 'vnr202',
+      code: 'VNR202',
+      label: 'VNR202',
+      hasTips: true,
+      storageKey: 'vnr202_bot_iuu_v1',
+      roomPrefix: 'vnr202_rooms',
+      questions: (window.VNR_DATA && window.VNR_DATA.questions) || [],
+      tips: (window.VNR_DATA && window.VNR_DATA.tips) || []
+    },
+    pmg201: {
+      id: 'pmg201',
+      code: 'PMG201',
+      label: 'PMG201',
+      hasTips: false,
+      storageKey: 'pmg201_bot_iuu_v1',
+      roomPrefix: 'pmg201_rooms',
+      questions: (window.PMG201_DATA && window.PMG201_DATA.questions) || [],
+      tips: []
+    }
+  };
 
-  // Fast lookups
-  const Q_BY_ID = new Map(QUESTIONS.map((q) => [q.id, q]));
-  const TIP_BY_ID = new Map(TIPS.map((t) => [t.id, t]));
-  const Q_TO_TIPS = new Map();
-  QUESTIONS.forEach((q) => Q_TO_TIPS.set(q.id, []));
-  TIPS.forEach((tip) => {
-    tip.questionIds.forEach((qid) => {
-      if (Q_TO_TIPS.has(qid)) Q_TO_TIPS.get(qid).push(tip);
+  let currentSubject = SUBJECTS.vnr202;
+  try {
+    const savedSubj = localStorage.getItem(ACTIVE_SUBJECT_KEY);
+    if (savedSubj && SUBJECTS[savedSubj]) currentSubject = SUBJECTS[savedSubj];
+  } catch (e) {}
+
+  let STORAGE_KEY = currentSubject.storageKey;
+  let QUESTIONS = currentSubject.questions;
+  let TIPS = currentSubject.tips;
+  let Q_BY_ID = new Map();
+  let TIP_BY_ID = new Map();
+  let Q_TO_TIPS = new Map();
+
+  function rebuildSubjectLookups() {
+    STORAGE_KEY = currentSubject.storageKey;
+    QUESTIONS = currentSubject.questions;
+    TIPS = currentSubject.tips;
+    Q_BY_ID = new Map(QUESTIONS.map((q) => [q.id, q]));
+    TIP_BY_ID = new Map(TIPS.map((t) => [t.id, t]));
+    Q_TO_TIPS = new Map();
+    QUESTIONS.forEach((q) => Q_TO_TIPS.set(q.id, []));
+    TIPS.forEach((tip) => {
+      tip.questionIds.forEach((qid) => {
+        if (Q_TO_TIPS.has(qid)) Q_TO_TIPS.get(qid).push(tip);
+      });
     });
-  });
+  }
+  rebuildSubjectLookups();
 
   // ==================== PERSISTENT STATE ====================
   function defaultState() {
@@ -636,7 +676,7 @@
     $('learnQuestion').innerHTML = renderHighlightedText(q.question, q.qHighlight, !!state.prefs.learnHighlight);
 
     learnCurrentOptionOrder = state.prefs.learnShuffleOpt ? shuffleArray(q.options) : q.options.slice();
-    const displayLetters = ['A', 'B', 'C', 'D'];
+    const displayLetters = ['A', 'B', 'C', 'D', 'E', 'F'];
     $('learnOptions').innerHTML = learnCurrentOptionOrder
       .map(
         (opt, i) => `
@@ -682,7 +722,7 @@
     const fb = $('learnFeedback');
     fb.classList.remove('hidden', 'fb-right', 'fb-wrong');
     fb.classList.add(isRight ? 'fb-right' : 'fb-wrong');
-    const displayLetters = ['A', 'B', 'C', 'D'];
+    const displayLetters = ['A', 'B', 'C', 'D', 'E', 'F'];
     const shownCorrectLetters = learnCurrentOptionOrder
       .map((opt, i) => (q.answer.includes(opt.key) ? (displayLetters[i] || opt.key) : null))
       .filter(Boolean);
@@ -856,7 +896,7 @@
     setHeartUI($('examHeartBtn'), isFav(q.id));
     $('examQuestionText').textContent = q.question;
 
-    const displayLetters = ['A', 'B', 'C', 'D'];
+    const displayLetters = ['A', 'B', 'C', 'D', 'E', 'F'];
     $('examOptionsList').innerHTML = item.optOrder
       .map((origKey, i) => {
         const opt = q.options.find((o) => o.key === origKey);
@@ -1287,9 +1327,100 @@
     qmCurrentId = null;
   }
 
+  // ==================== SUBJECT SWITCHING ====================
+  function applySubjectChrome() {
+    const subj = currentSubject;
+    const total = QUESTIONS.length;
+    const hasTips = !!subj.hasTips;
+
+    document.title = `Bột iuu thi tốt — Ôn thi ${subj.code}`;
+    document.querySelectorAll('#subjectTabs .subject-tab').forEach((btn) => {
+      const active = btn.dataset.subject === subj.id;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-selected', active ? 'true' : 'false');
+    });
+
+    if ($('brandSub')) $('brandSub').textContent = `Ôn thi ${subj.code} • ${total} câu`;
+    if ($('fcEmptyDesc')) $('fcEmptyDesc').textContent = `Bột hãy chọn bộ lọc khác hoặc quay lại tất cả ${total} câu nhé.`;
+    if ($('fcBackAllBtn')) $('fcBackAllBtn').textContent = `Xem tất cả ${total} câu`;
+    if ($('learnAllOpt')) $('learnAllOpt').textContent = `🌸 Tất cả (${total})`;
+    if ($('learnAllChip')) $('learnAllChip').textContent = `Tất cả (${total})`;
+    if ($('learnBackAllBtn')) $('learnBackAllBtn').textContent = `Học tất cả ${total} câu`;
+    if ($('examHeroBadge')) $('examHeroBadge').textContent = `🎀 Giả lập đề thi ${subj.code}`;
+    if ($('examRandomOpt')) $('examRandomOpt').textContent = `Ngẫu nhiên toàn bộ ${total} câu`;
+    if ($('bankAllChip')) $('bankAllChip').textContent = `Tất cả (${total})`;
+
+    // Hide Tips tab & right Tips sidebar for subjects without tips (e.g. PMG201)
+    if ($('navTipsTab')) $('navTipsTab').classList.toggle('hidden', !hasTips);
+    if ($('fcTipsAside')) $('fcTipsAside').classList.toggle('hidden', !hasTips);
+    if ($('learnTipsAside')) $('learnTipsAside').classList.toggle('hidden', !hasTips);
+    if ($('fcStage')) $('fcStage').classList.toggle('no-tips-aside', !hasTips);
+    if ($('learnStage')) $('learnStage').classList.toggle('no-tips-aside', !hasTips);
+  }
+
+  function switchSubject(subjectId) {
+    if (!SUBJECTS[subjectId] || subjectId === currentSubject.id) return;
+
+    // Safely pause active exam & cancel pending cloud push on old subject
+    stopExamTimer();
+    clearTimeout(cloudPushTimer);
+    if (state.activeExam && state.activeExam.inView) {
+      state.activeExam.inView = false;
+      saveState(true);
+    }
+
+    currentSubject = SUBJECTS[subjectId];
+    try {
+      localStorage.setItem(ACTIVE_SUBJECT_KEY, currentSubject.id);
+    } catch (e) {}
+
+    rebuildSubjectLookups();
+    state = loadState();
+
+    // Reset transient UI state
+    fcCustomSet = null;
+    learnCustomSet = null;
+    viewingResultAttempt = null;
+    learnDeck = [];
+    learnIdx = 0;
+    learnSessionRight = 0;
+    learnSessionWrong = 0;
+    resFilter = 'all';
+    tipsGroup = 'all';
+    bankFilter = 'all';
+    bankVisibleCount = 30;
+    if ($('bankSearchInput')) $('bankSearchInput').value = '';
+    if ($('tipsSearchInput')) $('tipsSearchInput').value = '';
+    closeQuestionModal();
+
+    applySubjectChrome();
+    updateHeaderStats();
+    rebuildFlashcardDeck(false);
+
+    // If user was on Tips tab and switched to a subject without tips, jump to Flashcards
+    if (!currentSubject.hasTips && currentTab === 'tips') {
+      switchTab('flashcards');
+    } else {
+      switchTab(currentTab);
+    }
+
+    // Reconnect Firebase Sync automatically to the new subject's room under the SAME code
+    if (activeSyncCode) {
+      connectSyncRoom(activeSyncCode, false);
+    }
+
+    showToast(`📚 Đã chuyển sang môn ${currentSubject.code} (${QUESTIONS.length} câu)!`);
+  }
+
   // ==================== EVENT LISTENERS ====================
   function bindEvents() {
     // Header & Nav
+    on('subjectTabs', 'click', (e) => {
+      const btn = e.target.closest('[data-subject]');
+      if (!btn) return;
+      switchSubject(btn.dataset.subject);
+    });
+
     document.querySelectorAll('.nav-tab').forEach((btn) => {
       btn.addEventListener('click', () => {
         if (btn.dataset.tab === 'exam' && viewingResultAttempt && currentTab === 'exam') {
@@ -1422,7 +1553,7 @@
         }
         $('fcJumpInput').value = '';
       } else {
-        showToast(`Không tìm thấy Câu ${raw} (nhập số từ 1 đến 413)`);
+        showToast(`Không tìm thấy Câu ${raw} (nhập số từ 1 đến ${QUESTIONS.length})`);
       }
     };
     $('fcJumpBtn').addEventListener('click', handleFcJump);
@@ -1846,7 +1977,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `bot-iuu-vnr202-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `bot-iuu-${currentSubject.id}-backup-${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
       showToast('⬇️ Đã tải file sao lưu tiến trình!');
@@ -1879,7 +2010,7 @@
     });
 
     $('resetAllDataBtn').addEventListener('click', () => {
-      if (confirm('Bột có chắc muốn XÓA TOÀN BỘ tiến trình, câu thả tim và lịch sử làm đề không?')) {
+      if (confirm(`Bột có chắc muốn XÓA TOÀN BỘ tiến trình, câu thả tim và lịch sử làm đề môn ${currentSubject.code} không?`)) {
         state = defaultState();
         viewingResultAttempt = null;
         fcCustomSet = null;
@@ -2210,7 +2341,7 @@
       localStorage.setItem(SYNC_CODE_KEY, activeSyncCode);
     } catch (e) {}
 
-    const ref = db.ref(`vnr202_rooms/${roomKey}`);
+    const ref = db.ref(`${currentSubject.roomPrefix}/${roomKey}`);
     activeRoomRef = ref;
     updateSyncStatusUI('syncing', `🔄 Đang kết nối mã: ${activeSyncCode}...`);
 
@@ -2321,6 +2452,7 @@
 
   // ==================== INIT ====================
   function init() {
+    applySubjectChrome();
     updateHeaderStats();
     bindEvents();
     rebuildFlashcardDeck(false);
